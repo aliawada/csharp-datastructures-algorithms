@@ -1,0 +1,407 @@
+VALUE TYPES
+
+INTEGRAL TYPES
+byte 8 bits unsigned (0 to 255)
+sbyte 8 bits signed (-128 to 127)
+short 16 bits signed (-32,768 to 32,767)
+ushort 16 bits unsigned
+int 32 bits signed
+uint 32 bits unsigned (0 to 4,294,967,295)
+long 64 bits signed
+ulong 64 bits unsigned (0 to 18,446,744,073,709,551,615)
+nint 32 ou 64 dependente do sistema signed
+nuint 32 ou 64 dependente do sistema unsigned
+
+Decimal mode: int a = -20; (-20)
+Hexadecimal mode:  byte b = 0xff; (255)
+Binary mode: uint c = 0b01101110; (110)
+
+default: 0
+
+FLOATING-POINT NUMBERS
+float 32 bits fe. 1.53f (f or F suffix)
+double 64 bits fe. 1.53 (no suffix or d/D suffix)
+decimal 128 bits fe. 1.53M (m or M suffix)
+
+float temperature = 36.6f;
+double reading = -4.5178923;
+decimal salary = 10000.47M;
+
+default: 0
+
+BOOLEAN VALUES
+bool isTrue = true;
+bool first = isTrue || false;  // true
+bool second = isTrue && false; // false
+bool third = 50 > 10; // true
+
+bool? -> nullable Boolean type
+
+default: false
+
+UNICODE CHARACTERS
+Unicode UTF-16 character
+char It represents a single Unicode character
+Character literal – for example, 'a' or 'M'
+Unicode escape sequence, starting with \u – for example, '\u25cf' for ●
+Hexadecimal escape sequence, starting with \x – for example, '\x107' for ć
+
+char letter = 'M';
+char bullet = '\u25cf';
+char special = '\x107';
+
+default:  \0 (U+0000)
+
+CONSTANTS
+Each constant value is an immutable value that cannot be changed
+const int DaysInWeek = 7;
+This has a positive impact on the performance of your application.
+
+ENUMERATIONS
+Each has a set of named constants to specify the available set of values.
+enum CurrencyEnum { Pln, Usd, Eur };
+
+CurrencyEnum currency = CurrencyEnum.Pln;
+switch (currency)
+{
+ case CurrencyEnum.Pln: /* Polish zloty */ break;
+ case CurrencyEnum.Usd: /* American Dollar */ break;
+ default: /* Euro */ break;
+}
+
+[Flags]
+enum ActionEnum
+{
+ None    = 0b_0000_0000, // 0
+ List    = 0b_0000_0001, // 1
+ Details = 0b_0000_0010, // 2
+ Add     = 0b_0000_0100, // 4
+ Edit    = 0b_0000_1000, // 8
+ Delete  = 0b_0001_0000, // 16
+ Publish = 0b_0010_0000  // 32
+}
+
+ActionEnum guest = ActionEnum.List;
+ActionEnum user = ActionEnum.List | ActionEnum.Details;
+ActionEnum editor = ActionEnum.List | ActionEnum.Add | ActionEnum.Edit;
+
+This has a very positive impact on code quality
+
+VALUE TUPLES
+a lightweight data structure that allows you to group multiple data elements of specific types
+mutable value type
+it is a very data-centric type, so you cannot even define methods within it
+
+using Statistics = (int Min, int Max, double Avg);
+
+Statistics Calculate(params int[] numbers)
+{
+    if (numbers.Length == 0) { return (0, 0, 0); }
+    int min = int.MaxValue;
+    int max = int.MinValue;
+    int sum = 0;
+    foreach (int number in numbers)
+    {
+        if (number > max) { max = number; }
+        if (number < min) { min = number; }
+        sum += number;
+    }
+    return (min, max, (double)sum / numbers.Length);
+}
+
+Statistics result = Calculate(4, 8, 13);
+Console.WriteLine($"Min = {result.Min} / Max = {result.Max}   / Avg = {result.Avg:F2}");
+
+USER-DEFINED STRUCTS
+data-centric struct types
+structure types
+immutable data members
+a user-defined struct type should be quite small, data-centric, and immutable by using the readonly modifier
+
+public readonly struct Price
+ {
+    public Price(decimal amount, CurrencyEnum currency)
+    {
+        Amount = amount;
+        Currency = currency;
+    }
+    public readonly decimal Amount { get; init; }
+    public readonly CurrencyEnum Currency { get; init; }
+    public override string ToString() => $"{Amount} {Currency}";
+ }
+ 
+init  This allows us to set a value for such properties during the object’s construction and restrict later modifications.
+
+ Price priceRegular = new(100, CurrencyEnum.Pln);
+ Console.WriteLine(priceRegular);
+
+// code simplification
+ public readonly struct Price(decimal amount, CurrencyEnum currency)
+ {
+	public readonly decimal Amount { get; init; } = amount;
+	public readonly CurrencyEnum Currency { get; init; } = currency;
+	public override string ToString() => $"{Amount} {Currency}";
+ }
+ 
+ public enum CurrencyEnum { Pln, Usd, Eur };
+ 
+ with 	allows you to create a copy of a structure type instance together with changing values of some properties and fields
+ 
+Price priceDiscount = priceRegular with { Amount = 50 };
+Console.WriteLine(priceDiscount);
+
+default values of struct: reference = nullable and value types = their default values
+
+
+NULLABLE VALUE TYPES
+can have all the values of its underlying value type and the null value
+the ? operator just after a type name or  System.Nullable<T> structure
+
+int? age = 34;
+float? note = 5.5f;
+Nullable<bool> isAccepted = null;
+
+you can compare it with null or use the HasValue property or get a value using the Value property
+ 
+if (age != null) { Console.WriteLine(age.Value); }
+if (note.HasValue) { Console.WriteLine(note.Value); }
+
+related: null-coalescing operator (??)
+returns a non-nullable value, if one exists, or uses another value instead of null
+
+the GetValueOrDefault method
+int chosenAge = age ?? 18;
+float shownNote = note.GetValueOrDefault(5.0f); //  the note value is assigned to shownNote if it is not null. Otherwise, 5.0f is applied.
+
+null-coalescing assignment operator, namely ??=
+It allows you to assign the value of the right-hand side operand to the left-hand side operand if the first one is equal to null
+
+DateTime date = new(1988, 11, 9);
+int? age = GetAgeFromBirthDate(date);
+age ??= 18; // The same as: age = age ?? 18;
+
+int? GetAgeFromBirthDate(DateTime date)
+{
+ double days = (DateTime.Now - date).TotalDays;
+ return days > 0 ? (int)(days / 365) : null;
+}
+
+null conditional operator returns null if the left-hand side operand is null
+
+string? GetFormatted(float? number) => number?.ToString("F2");
+
+REFERENCE TYPES
+
+OBJECTS
+base entity for all value types
+
+ToString
+GetType
+Equals
+GetHashCode
+
+int age = 28;
+object ageBoxing = age;
+int ageUnboxing = (int)ageBoxing;
+
+STRINGS
+string a sequence of Unicode characters, one, none or null
+
+// code example 1
+string firstName = "Marcin", lastName = "Jamro";
+int year = 1988;
+string note = firstName + " " + lastName.ToUpper() + " was born in " + year;
+string initials = firstName[0] + "." + lastName[0] + ".";
+string note = string.Format("{0} {1} was born in {2}", firstName, lastName.ToUpper(), year);
+string note = $"{firstName} {lastName.ToUpper()} was born in {year}";
+
+// code example 2
+string[] names = ["Marcin", "Adam", "Martyna"];
+DateTime[] dates = [new(1988, 11, 9), new(1995, 4, 25), new(2003, 7, 24)];
+float[] temperatures = [36.6f, 39.1f, 35.9f];
+
+Console.WriteLine($"{"Name",-8} {"Birth date",10} {"Temp. [C]",11} -> Result");
+
+for (int i = 0; i < names.Length; i++)
+{
+    string line = $"{names[i],-8} {dates[i],10:dd.MM.yyyy} {temperatures[i],11:F1} -> {temperatures[i] switch
+    {
+        > 40.0f => "Very high",
+        > 37.0f => "High",
+        > 36.0f => "Normal",
+        > 35.0f => "Low",
+        _ => "Very low"
+    }}";
+    Console.WriteLine(line);
+}
+
+two string instances are the same if they contain the same sequence of characters, so it is a similar behavior as in the case of value types
+
+
+CLASSES
+
+public class Person
+ {
+	 private string _location = string.Empty;
+	 public string Name { get; set; }
+	 public required int Age { get; set; }
+	 public Person() => Name = "---";
+	 
+	 public Person(string name)
+	 {
+		Name = name;
+	 }
+	 
+    public void Relocate(string location)
+    {
+        if (!string.IsNullOrEmpty(location))
+        {
+            _location = location;
+        }
+    }
+	
+    public float GetDistance(string location) => DistanceHelpers.GetDistance(_location, location);
+ }
+ 
+ Person person = new("Martyna") { Age = 20 };
+ person.Relocate("Rzeszow");
+ float distance = person.GetDistance("Warsaw");
+ 
+ // simplifying the class code
+ public class Person(string name)
+ {
+	 private string _location = string.Empty;
+	 public string Name { get; set; } = name;
+	 public required int Age { get; set; }
+	 
+	 public void Relocate(string? location) => _location = location ?? _location;
+	 public float GetDistance(string location) => DistanceHelpers.GetDistance(_location, location);
+ }
+ 
+RECORDS
+Two records are equal if their record type definitions are identical and when values 
+for each field in both records are the same. This differs from a class, where two 
+instances of the same class are equal only when they are referencing the same data.
+
+- smaller amount of code needs to be written
+- the compiler automatically generates the public init-only properties
+- A primary constructor with the parameters
+- Deconstruct method with a set of out parameters
+
+this data type is data-centric and is intended to be immutable, providing a short and clear syntax
+
+record or record class
+note: record struct
+
+Dog rex = new("Rex", "Schnauzer", 40, 11, 5);
+Console.WriteLine(rex);
+public record Dog(string Name, string Breed, int Height,
+ float Weight, int Age);
+ 
+non-destructive mutation
+Dog beauty = rex with { Name = "Beauty", Height = 35 };
+
+
+
+INTERFACES
+interface
+public interface IDevice
+{
+ // three properties
+ string Model { get; set; }
+ string Number { get; set; }
+ int Year { get; set; }
+ // signatures of three methods
+ void Configure(DeviceConfiguration configuration);
+ bool Start();
+ bool Stop();
+}
+
+// contains all of the properties and methods specified in the interface + Diagonal extra prop
+internal class Display : IDevice
+{
+    public string Model { get; set; }
+    public string Number { get; set; }
+    public int Year { get; set; }
+    public int Diagonal { get; set; }
+    public void Configure(DeviceConfiguration configuration) { (...) }
+    public bool Start() { (...) }
+    public bool Stop() { (...) }
+}
+
+
+DELEGATES
+specifies the required signature of a method
+
+delegate
+
+// lambda expression
+Mean arithmetic = (a, b, c) => (a + b + c) / 3;
+// anonymous method
+Mean geometric = delegate (double a, double b, double c)
+{ return Math.Pow(a * b * c, 1 / 3.0); };
+// named method
+Mean harmonic = Harmonic;
+
+double a = arithmetic.Invoke(5, 6.5, 7);
+double g = geometric.Invoke(5, 6.5, 7);
+double h = harmonic.Invoke(5, 6.5, 7);
+Console.WriteLine($"{a:F2} / {g:F2} / {h:F2}");
+
+double Harmonic(double a, double b, double c) =>
+3 / ((1 / a) + (1 / b) + (1 / c));
+
+delegate double Mean(double a, double b, double c);
+ 
+
+
+DYNAMICS
+It allows you to bypass type checking during compilation so that you can perform it during runtime.
+
+dynamic
+
+dynamic posts = await GetPostsAsync();
+foreach (dynamic post in posts)
+{
+ string title = post.title;
+ Console.WriteLine($"Title: {title}");
+}
+Task<dynamic> GetPostsAsync() { /* ... */ }
+
+
+NULLABLE REFERENCE TYPES
+System.NullReferenceException
+It is thrown when you access one of the members of a variable using the dot operator (.), when a variable is null.
+
+? operator
+
+null-state static analysis
+
+The first solution is to add a conditional statement that checks whether the value is not equal to null. 
+Another way is to use the null forgiving operator, also named null-suppression (!), when you are certain
+that the variable is not null here.
+
+Random random = new();
+List<Measurement?> measurements = [];
+
+for (int i = 0; i < 100; i++)
+{
+	Measurement? measurement = random.Next(3) != 0
+	 ? new(DateTime.Now, random.Next(1000) / 1000.0f)
+	  : null;
+	  
+	measurements.Add(measurement);
+	Console.WriteLine(IsValid(measurement)
+        ? measurement!.ToString()
+        : "-");
+    await Task.Delay(100);
+ }
+ 
+static bool IsValid(Measurement? measurement)
+{
+    return measurement != null
+        && measurement.Value >= 0.0f
+        && measurement.Value <= 1.0f;
+}
+
+public record Measurement(DateTime ReadAt, float Value);
