@@ -1,0 +1,82 @@
+ALGORITHMS
+
+input -> instructions -> output
+
+NOTATIONS FOR ALGORITHM REPRESENTATION
+natural language
+flowchart
+pseudocode
+programming language
+
+TYPES OF ALGORITHMS
+RECURSIVE
+merge sort/quicksort
+Towers of Hanoi
+Traversing a tree
+Fibonacci series
+Generating fractals
+factorial
+greatest common divisor of two numbers
+Traversing the filesystem
+
+DIVIDE AND CONQUER ALGORITHMS
+merge sort/quicksort 
+Finding the closest pair of points
+power of a number
+minimum and maximum values
+fast Fourier transform
+Multiplying large numbers
+
+BACK-TRACKING ALGORITHMS
+rat in a maze
+Sudoku
+crosswords
+eight queens
+knight’s tour
+gray codes
+m-coloring problem
+
+GREEDY ALGORITHMS
+Dijkstra’s algorithm
+Kruskal’s algorithm/Prim’s algorithm
+minimum coin change
+Huffman coding
+Load balancing/network routing
+
+HEURISTIC ALGORITHMS
+Genetic algorithms
+vehicle routing problems/traveling salesman problem
+Knapsack problem
+Filtering and processing signals
+Detecting viruses
+
+DYNAMIC PROGRAMMING
+top-down approach/memoization
+bottom-up approach/tabulation
+Fibonacci series
+shortest path between all pairs of vertices in a graph/Floyd-Warshall algorithm
+Dijkstra’s algorithm
+Tower of Hanoi
+artificial neural networks
+
+BRUTE-FORCE ALGORITHMS
+Guessing a password
+Finding the minimum value in an unsorted array
+Finding the best possible plan for a day
+traveling salesman
+
+COMPUTATIONAL COMPLEXITY
+
+Time complexity (n)
+Constant O(1)
+Logarithmic O(log n)
+Linear O(n)
+Polynomial O(n°m)
+double logarithmic time, polylogarithmic time, fractional power
+ time, linearithmic time, exponential time, and factorial time
+ 
+SPACE COMPLEXITY
+how much memory is necessary
+
+
+
