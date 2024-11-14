@@ -1,0 +1,613 @@
+ARRAYS AND SORTING
+store many items of the same type
+the number of elements in an array cannot be changed after initialization
+
+single-dimensional arrays, multi-dimensional arrays, and jagged arrays
+
+SORTING ALGORITHMS
+selection sort
+insertion sort
+bubble sort
+merge sort
+Shell sort
+quicksort
+heap sort
+
+SINGLE DIMENSIONAL ARRAYS
+Such an array stores a collection of items of the same type, which are accessible by an index
+indices of element within arrays in C# are zero-based
+
+type[] name;
+
+int[] numbers;
+numbers = new int[5];
+
+int[] numbers = new int[5];
+numbers[0] = 9;
+numbers[1] = -11;
+numbers[2] = 6;
+numbers[3] = -12;
+numbers[4] = 1;
+
+int[] numbers = new int[] { 9, -11, 6, -12, 1 };
+int[] numbers = { 9, -11, 6, -12, 1 };
+
+collection expression
+int[] numbers = [9, -11, 6, -12, 1];
+
+int middle = numbers[2];
+
+Length
+int last = numbers[numbers.Length - 1];
+
+index operator
+int last = numbers[^1];
+
+Rank 
+int rank = numbers.Rank;
+
+Array 
+Exists
+bool anyPositive = Array.Exists(numbers, e => e > 0);
+
+TrueForAll
+bool noZeros = Array.TrueForAll(numbers, e => e != 0);
+
+Find
+int firstNegative = Array.Find(numbers, e => e < 0);
+
+FindAll
+int[] negatives = Array.FindAll(numbers, e => e < 0)
+
+IndexOf
+int index = Array.IndexOf(numbers, -12);
+
+ForEach
+Array.ForEach(numbers, e => Console.WriteLine(Math.Abs(e)));
+
+Reverse
+Array.Reverse(numbers, 0, 3);
+
+Sort
+Array.Sort(numbers);
+
+Fill
+Array.Fill(numbers, 3);
+
+Clear
+Array.Clear(numbers);
+
+Copy
+int[] subarray = new int[3];
+Array.Copy(numbers, 0, subarray, 0, 3);
+
+extension methods
+Contains
+bool contains = numbers.Contains(6);
+
+All
+bool noZeros = numbers.All(n => n != 0);
+
+Any
+bool anyPositive = numbers.Any(n => n > 0);
+
+Min
+int min = numbers.Min()
+
+Max
+int max = numbers.Max()
+
+Average
+double avg = numbers.Average();
+
+Sum
+int sum = numbers.Sum();
+
+Example – month names
+using System.Globalization;
+CultureInfo culture = new("en");
+string[] months = new string[12];
+
+for (int month = 1; month <= 12; month++)
+{
+ DateTime firstDay = new(DateTime.Now.Year, month, 1);
+ string name = firstDay.ToString("MMMM", culture);
+ months[month - 1] = name;
+}
+
+foreach (string m in months)
+{
+ Console.WriteLine(m);
+}
+
+
+MULTI-DIMENSIONAL ARRAYS
+int[,] numbers = new int[5, 3];
+numbers[0, 0] = 9; (...)
+
+int[,] numbers = new int[,]
+{ 
+	{ 9, 5, -9 }, 
+	{ -11, 4, 0 }, 
+	{ 6, 115, 3 }, 
+	{ -12, -9, 71 }, 
+	{ 1, -6, -1 } 
+};
+
+int number = numbers[2, 1];
+numbers[1, 0] = 11;
+
+three-dimensional array (x,y,z)
+int[,,] numbers = new int[3, 2, 3];
+
+FOUR-DIMENSIONAL ARRAY
+int[,,,] numbers = new int[5, 4, 3, 2];
+
+
+Example – multiplication table
+
+ 1   2   3   4   5   6   7   8   9  10
+ 2   4   6   8  10  12  14  16  18  20
+ 3   6   9  12  15  18  21  24  27  30
+ 4   8  12  16  20  24  28  32  36  40
+ 5  10  15  20  25  30  35  40  45  50
+ 6  12  18  24  30  36  42  48  54  60
+ 7  14  21  28  35  42  49  56  63  70
+ 8  16  24  32  40  48  56  64  72  80
+ 9  18  27  36  45  54  63  72  81  90
+ 10  20  30  40  50  60  70  80  90 100
+
+
+int[,] results = new int[10, 10];
+
+for (int i = 0; i < results.GetLength(0); i++)
+{
+	for (int j = 0; j < results.GetLength(1); j++)
+ 	{
+ 		results[i, j] = (i + 1) * (j + 1);
+ 		Console.Write($"{results[i, j],4}");
+ 	}
+  	
+	Console.WriteLine();
+}
+
+
+
+
+
+Example – game map
+
+ConsoleColor GetColor(char terrain)
+{
+    return terrain switch
+    {
+        'g' => ConsoleColor.Green,
+        's' => ConsoleColor.Yellow,
+        'w' => ConsoleColor.Blue,
+        _ => ConsoleColor.DarkGray
+    };
+}
+
+char GetChar(char terrain)
+{
+    return terrain switch
+    {
+        'g' => '\u201c',
+        's' => '\u25cb',
+        'w' => '\u2248',
+        _ => '\u25cf'
+    };
+}
+
+
+using System.Text;
+char[,] map = 
+{
+    { 's', 's', 's', 'g', 'g', 'g', 'g', 'g' },
+    { 's', 's', 's', 'g', 'g', 'g', 'g', 'g' },
+    { 's', 's', 's', 's', 's', 'b', 'b', 'b' },
+    { 's', 's', 's', 's', 's', 'b', 's', 's' },
+    { 'w', 'w', 'w', 'w', 'w', 'b', 'w', 'w' },
+    { 'w', 'w', 'w', 'w', 'w', 'b', 'w', 'w' }
+ };
+
+Console.OutputEncoding = Encoding.UTF8;
+for (int r = 0; r < map.GetLength(0); r++)
+{
+    for (int c = 0; c < map.GetLength(1); c++)
+    {
+        Console.ForegroundColor = GetColor(map[r, c]);
+        Console.Write(GetChar(map[r, c]) + " ");
+    }
+    Console.WriteLine();
+}
+Console.ResetColor();
+
+
+
+JAGGED ARRAYS
+array of arrays
+a single-dimensional array, where each element is another array
+
+int[][] numbers = new int[4][];
+
+numbers[0] = new int[] { 9, 5 }; 
+numbers[1] = new int[] { 0, -3, 12 }; 
+numbers[3] = new int[] { 54 };
+
+
+int[][] numbers = new int[4][];
+numbers[0] = [9, 5];
+numbers[1] = [0, -3, 12];
+numbers[3] = [54];
+
+int[][] numbers =
+{
+ new int[] { 9, 5 },
+ new int[] { 0, -3, 12 },
+ null!,
+ new int[] { 54 }
+};
+
+int[][] numbers =
+[
+ [9, 5],
+ [0, -3, 12],
+ null!,
+ [54]
+];
+
+int number = numbers[1][2];
+numbers[1][1] = 50;
+
+
+Example – yearly transport plan
+public enum MeanEnum { Car, Bus, Subway, Bike, Walk }
+
+Random random = new();
+
+int meansCount = Enum.GetNames<MeanEnum>().Length;
+int year = DateTime.Now.Year;
+MeanEnum[][] means = new MeanEnum[12][];
+
+for (int m = 1; m <= 12; m++)
+{
+    int daysCount = DateTime.DaysInMonth(year, m);
+    means[m - 1] = new MeanEnum[daysCount];
+    for (int d = 1; d <= daysCount; d++)
+    {
+        int mean = random.Next(meansCount);
+        means[m - 1][d - 1] = (MeanEnum)mean;
+    }
+} 
+
+
+string[] GetMonthNames()
+{
+    CultureInfo culture = new("en");
+    string[] names = new string[12];
+    foreach (int m in Enumerable.Range(1, 12))
+    {
+        DateTime firstDay = new(DateTime.Now.Year, m, 1);
+        string name = firstDay.ToString("MMMM", culture);
+        names[m - 1] = name;
+    }
+    return names;
+} 
+
+(char Char, ConsoleColor Color) Get(MeanEnum mean)
+{
+    return mean switch
+    {
+        MeanEnum.Bike => ('B', ConsoleColor.Blue),
+        MeanEnum.Bus => ('U', ConsoleColor.DarkGreen),
+        MeanEnum.Car => ('C', ConsoleColor.Red),
+        MeanEnum.Subway => ('S', ConsoleColor.Magenta),
+        MeanEnum.Walk => ('W', ConsoleColor.DarkYellow),
+        _ => throw new Exception("Unknown type")
+    };
+}
+
+string[] months = GetMonthNames();
+int nameLength = months.Max(n => n.Length) + 2;
+
+for (int m = 1; m <= 12; m++)
+{
+    string month = months[m - 1];
+    Console.Write($"{month}:".PadRight(nameLength));
+    for (int d = 1; d <= means[m - 1].Length; d++)
+    {
+        MeanEnum mean = means[m - 1][d - 1];
+        (char character, ConsoleColor color) = Get(mean);
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.BackgroundColor = color;
+        Console.Write(character);
+	Console.ResetColor();
+        Console.Write(" ");
+    }
+    Console.WriteLine();
+} 
+
+
+
+
+SORTING ALGORITHMS
+sorting an array to arrange its elements in the correct order, either ascending or descending
+
+selection sort
+This algorithm divides the array into two parts, namely sorted and unsorted
+the algorithm finds the smallest element in the unsorted part and exchanges it with the first element in the unsorted part
+
+void Sort(int[] a)
+{
+    for (int i = 0; i < a.Length - 1; i++)
+    {
+        int minIndex = i;
+        int minValue = a[i];
+        for (int j = i + 1; j < a.Length; j++)
+        {
+            if (a[j] < minValue)
+            {
+                minIndex = j;
+                minValue = a[j];
+            }
+        }
+        (a[i], a[minIndex]) = (a[minIndex], a[i]);
+    }
+}
+
+int[] array = [-11, 12, -42, 0, 1, 90, 68, 6, -9];
+Sort(array);
+Console.WriteLine(string.Join(" | ", array));
+
+
+the worst and the average time complexity is O(n°2)
+
+
+
+insertion sort
+the array is divided into two parts, namely sorted and unsorted
+the algorithm takes the first element from the unsorted part and places it in a suitable location within the sorted part, to leave the sorted part in the correct order
+
+void Sort(int[] a)
+{
+ for (int i = 1; i < a.Length; i++)
+ {
+        int j = i;
+        while (j > 0 && a[j] < a[j - 1])
+        {
+            (a[j], a[j - 1]) = (a[j - 1], a[j]);
+            j--;
+        }
+  }
+}
+
+
+the worst and average time complexity is O(n°2)
+
+bubble sort
+The algorithm just iterates through the array and compares adjacent elements. If they are located in an incorrect order, they are swapped.
+void Sort(int[] a)
+{
+    for (int i = 0; i < a.Length; i++)
+    {
+        for (int j = 0; j < a.Length - 1; j++)
+        {
+            if (a[j] > a[j + 1]) 
+            {
+                (a[j], a[j + 1]) = (a[j + 1], a[j]);
+            }
+        }
+    }
+}
+
+comparisons should be stopped when no changes are discovered during one iteration through the array
+void Sort(int[] a)
+{
+    for (int i = 0; i < a.Length; i++)
+    {
+	bool isAnyChange = false;
+        for (int j = 0; j < a.Length - 1; j++)
+        {
+            if (a[j] > a[j + 1])
+            {
+                isAnyChange = true;
+                (a[j], a[j + 1]) = (a[j + 1], a[j]);
+            }
+        }
+        if (!isAnyChange) { break; }
+    }
+}
+
+
+both worst and average cases O(n°2)
+
+
+merge sort
+This algorithm recursively splits the array in half until the array contains only one element, which is sorted. Then, the algorithm merges the already sorted
+subarrays (starting with these with only one element) into the sorted array.
+
+void Sort(int[] a)
+{
+    if (a.Length <= 1) { return; }
+    int m = a.Length / 2;
+    int[] left = GetSubarray(a, 0, m - 1);
+    int[] right = GetSubarray(a, m, a.Length - 1);
+    Sort(left);
+    Sort(right);
+    int i = 0, j = 0, k = 0;
+    while (i < left.Length && j < right.Length)
+    {
+        if (left[i] <= right[j]) { a[k] = left[i++]; }
+        else { a[k] = right[j++]; }
+        k++;
+    }
+    while (i < left.Length) { a[k++] = left[i++]; }
+    while (j < right.Length) { a[k++] = right[j++]; }
+}
+
+int[] GetSubarray(int[] a, int si, int ei)
+{
+ int[] result = new int[ei - si + 1];
+ Array.Copy(a, si, result, 0, ei - si + 1);
+ return result;
+}
+
+
+
+O(n log(n)) for both average and worst cases.
+
+
+
+
+
+
+
+
+
+
+Shell sort 
+The algorithm performs h-sorting to sort virtual subarrays consisting of elements with a distance equal to h, using the insertion
+sort. At the beginning, h is set to half of the array’s length and is divided by 2 in each iteration, until it is equal to 1.
+
+void Sort(int[] a)
+{
+    for (int h = a.Length / 2; h > 0; h /= 2)
+    {
+        for (int i = h; i < a.Length; i++)
+        {
+            int j = i;
+            int ai = a[i];
+            while (j >= h && a[j - h] > ai)
+            {
+                a[j] = a[j - h];
+                j -= h;
+            }
+            a[j] = ai;
+        }
+    }
+}
+
+
+
+In the worst case, it is O(n°2).
+average time complexity is about O(n log(n)).
+
+
+
+
+
+
+quicksort
+The algorithm picks some value (for example, from the last element of the array) as a pivot. Then, it reorders the array in such a way that
+values lower than the pivot are placed before it (forming the lower  subarray), while values greater than or equal to the pivot are placed
+after it (the higher subarray). Such a process is called partitioning. Next, the algorithm recursively sorts each of the aforementioned subarrays.
+Each subarray is further divided into the next two subarrays, and so on. The recursive calls stop when there are one or zero elements in a
+subarray because in such a case, there is nothing to sort.
+
+recursion
+
+void Sort(int[] a)
+{
+ SortPart(a, 0, a.Length - 1);
+}
+
+specify the lower and upper indices, which indicate which part of the array should be sorted.
+
+void SortPart(int[] a, int l, int u)
+{
+ if (l >= u) { return; }
+ int pivot = a[u];
+ int j = l - 1;
+ for (int i = l; i < u; i++)
+ {
+        if (a[i] < pivot)
+        {
+            j++;
+            (a[j], a[i]) = (a[i], a[j]);
+        }
+  }
+  int p = j + 1;
+  (a[p], a[u]) = (a[u], a[p]);
+  SortPart(a, l, p - 1);
+  SortPart(a, p + 1, u);
+}
+
+
+
+O(n log(n)) average time complexity, despite having O(n) worst time complexity.
+
+
+
+
+heap sort
+binary heap
+it is a tree-based structure where each node contains either zero, one, or two child nodes.
+First, the algorithm builds a max-heap from the array (the heapify operation). Then, it repeats a few steps until there is only one element in the heap:
+1. Swap the first element (root with the maximum value) with the last element.
+2. Remove the last element (which is currently the maximum value) from the heap.
+3. Build the max-heap again.
+
+heapify
+max-heap
+each node can contain only the child nodes whose values are smaller than or equal to the node’s value.
+
+min-heap
+
+
+
+void Sort(int[] a)
+{
+    for (int i = a.Length / 2 - 1; i >= 0; i--)
+    {
+        Heapify(a, a.Length, i);
+    }
+    for (int i = a.Length - 1; i > 0; i--)
+    {
+        (a[0], a[i]) = (a[i], a[0]);
+        Heapify(a, i, 0);
+    }
+}
+
+
+void Heapify(int[] a, int n, int i)
+{
+    int max = i;
+    int l = 2 * i + 1;
+    int r = 2 * i + 2;
+    max = l < n && a[l] > a[max] ? l : max;
+    max = r < n && a[r] > a[max] ? r : max;
+    if (max != i)
+    {
+	(a[i], a[max]) = (a[max], a[i]);
+ 	Heapify(a, n, max);
+    }
+}
+
+The time complexity is O(n log(n)).
+
+
+
+
+
+
+extra algorithms
+block sort, tree sort, cube sort, strand sort, and cycle sort.
+
+
+Performance analysis
+O(n"2): Selection sort, insertion sort, and bubble sort
+O(n log(n)): Merge sort, Shell sort, quicksort, and heap sort
+
+
+
+
+
+
+
+
+
+
+
+
+
