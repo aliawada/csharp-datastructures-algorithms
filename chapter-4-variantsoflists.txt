@@ -1,0 +1,488 @@
+VARIANTS OF LISTS
+lists
+
+simple list
+sorted lists
+linked list
+List-related interfaces
+
+SIMPLE LISTS
+
+"array lists"
+dynamically increase or decrease its size
+
+using System.Collections;
+ArrayList arrayList = new() { 5 };                    			ArrayList arrayList = [5];
+arrayList.Add(6);
+arrayList.AddRange(new int[] { -7, 8 });
+arrayList.AddRange(new object[] { "Marcin", "Kate" });
+arrayList.Insert(5, 7.8);
+
+Add adds a new item at the end of the list
+AddRange adds a collection of elements at the end of the array list
+Insert places an element in a specified location within the collection
+
+object first = arrayList[0]!;
+int third = (int)arrayList[2]!;
+
+foreach (object element in arrayList)
+{
+ Console.WriteLine(element);
+}
+
+Count
+int count = arrayList.Count;
+  
+Capacity
+int capacity = arrayList.Capacity;
+
+Contains
+bool containsMarcin = arrayList.Contains("Marcin");
+
+IndexOf	LastIndexOf
+int minusIndex = arrayList.IndexOf(-7)
+
+bool containsAnn = arrayList.IndexOf("Ann") >= 0;
+
+Remove, RemoveAt, RemoveRange, and Clear
+arrayList.Remove(5);
+arrayList.RemoveAt(1);
+arrayList.RemoveRange(1, 2);
+arrayList.Clear();
+
+Remove removes the first occurrence of a given value
+RemoveAt removes an item with a provided index
+RemoveRange removes a given number of elements starting from some index
+Clear removes all elements
+
+
+"Generic lists"
+
+List<int> list = [6, 90, -20, 0, 4, 1, 8, -20, 41];
+int min = list.Min();
+int max = list.Max();
+int sum = list.Sum();
+double avg = list.Average();
+
+bool allPositive = list.All(x => x > 0);
+bool anyZero = list.Any(x => x == 0);
+
+int existingElement = list.ElementAtOrDefault(5);
+int nonExistingElement = list.ElementAtOrDefault(100);
+
+List<int> unique = list.Distinct().ToList();
+
+List<int> ordered = list.OrderBy(x => x).ToList();
+
+List<int> skipped = list.Skip(4).ToList();
+List<int> taken = list.Take(3).ToList();
+
+
+pagination
+int page = 1;
+int size = 10;
+List<int> items = list
+ 	.Skip((page - 1) * size)
+ 	.Take(size)
+ 	.ToList();
+
+
+
+
+Example – average value
+
+List<double> num = [];
+do
+{
+	Console.Write("Enter the number: ");
+ 	string numStr = Console.ReadLine() ?? string.Empty;
+ 	if (!double.TryParse(numStr, out double n)) { break; }
+ 	num.Add(n);
+ 	Console.WriteLine($"Average value: {num.Average()}");
+}
+while (true);
+
+
+
+Example – list of people
+
+public record Person(string Name, int Age, string Country);
+
+List<Person> people =
+[
+ new("Marcin", 35, "PL"),
+ new("Sabine", 25, "DE"),
+ new("Mark", 31, "PL")
+];
+
+List<Person> r = people.OrderBy(p => p.Name).ToList();
+
+List<Person> r = [.. people.OrderBy(p => p.Name)];
+
+foreach (Person p in r)
+{
+	string line = $"{p.Name} ({p.Age}) from {p.Country}.";
+ 	Console.WriteLine(line);
+}
+ 
+
+method syntax
+
+List<string> names = people
+    .Where(p => p.Age <= 30)
+    .OrderBy(p => p.Name)
+    .Select(p => p.Name)
+    .ToList();
+
+
+query syntax
+
+List<string> names = (from p in people
+                      where p.Age <= 30
+                      orderby p.Name
+                      select p.Name).ToList();
+
+
+
+
+"Sorted lists"
+which is a collection of key-value pairs, sorted by keys, without the necessity for you to sort them on your
+own. 
+
+Add Remove ContainsKey ContainsValue IndexOfKey IndexOfValue  Keys  Values
+
+Example – address book
+
+public record Person(
+ string Name,
+ string Street,
+ string PostalCode,
+ string City,
+ string Country);
+
+
+SortedList<string, Person> people = new()
+{
+ { "Marcin Jamro", new("Marcin Jamro",
+ "Polish Street 1/23", "35-001", "Rzeszow", "PL") },
+ { "Martyna Kowalska", new("Martyna Kowalska",
+ "World Street 5", "00-123", "Warsaw", "PL") }
+};
+
+
+people.Add("Mark Smith", new("Mark Smith",
+ "German Street 6", "10000", "Berlin", "DE"));
+
+KeyValuePair<string, Person>
+foreach ((string k, Person p) in people)
+{
+ Console.WriteLine($"{k}: {p.Street}, {p.PostalCode} {p.City}, {p.Country}.");
+}
+
+
+
+"Linked lists"
+
+Singly linked lists
+each list element contains a pointer to the next element
+move from any element to the next one, but you cannot go back
+
+
+Doubly linked lists
+allows you to navigate both forward and backward from each list item
+
+LinkedListNode<int>
+LinkedListNode<string>
+
+AddFirst adds an element at the beginning of the list
+AddLast adds an element at the end of the list
+AddBefore adds an element before the specified node in the list
+AddAfter adds an element after the specified node in the list
+Contains checks whether the specified value exists in the list
+Remove removes a node from the list
+Clear removes all elements from the list
+
+Example – book reader
+
+public record Page(string Content);
+
+Page p1 = new("Welcome to (...)");
+Page p2 = new("While reading (...)");
+Page p3 = new("As a developer (...)");
+Page p4 = new("In the previous (...)");
+Page p5 = new("So far, you (...)");
+Page p6 = new("The current (...)");
+
+LinkedList<Page> pages = new();
+pages.AddLast(p2);
+LinkedListNode<Page> n4 = pages.AddLast(p4);
+pages.AddLast(p6);
+pages.AddFirst(p1);
+pages.AddBefore(n4, p3);
+pages.AddAfter(n4, p5);
+
+LinkedListNode<Page> c = pages.First!;
+int number = 1;
+while (c != null)
+{
+    Console.Clear();
+    string page = $"- {number} -";
+    int spaces = (90 - page.Length) / 2;
+    Console.WriteLine(page.PadLeft(spaces + page.Length));
+    Console.WriteLine();
+    string content = c.Value.Content;
+    for (int i = 0; i < content.Length; i += 90)
+    {
+        string line = content[i..];
+        line = line.Length > 90 ? line[..90] : line;
+        Console.WriteLine(line.Trim());
+    }
+    Console.WriteLine($"\nQuote from (...)");
+    Console.Write(c.Previous != null
+        ? "< PREV [P]" : GetSpaces(14));
+    Console.Write(c.Next != null
+        ? "[N] NEXT >".PadLeft(76) : string.Empty);
+    Console.WriteLine();
+    ConsoleKey key = Console.ReadKey(true).Key;
+    if (key == ConsoleKey.N && c.Next != null)
+    {
+        c = c.Next;
+        number++;
+    }
+    else if (key == ConsoleKey.P && c.Previous != null)
+    {
+        c = c.Previous;
+        number--;
+    }
+}
+
+
+string GetSpaces(int number) => string.Join(
+ null, Enumerable.Range(0, number).Select(n => " "));
+
+
+"Circular singly linked lists"
+the last node points to the first element, creating a list that can be iterated endlessly
+
+using System.Collections;
+public class CircularLinkedList<T>
+ : LinkedList<T>
+{
+ public new IEnumerator GetEnumerator() =>
+ new CircularEnumerator<T>(this);
+}
+
+public class CircularEnumerator<T>(LinkedList<T> list)
+: IEnumerator<T>
+ {
+    private LinkedListNode<T>? _current = null;
+    public T Current => _current != null
+        ? _current.Value
+        : default!;
+    object IEnumerator.Current => Current!;
+    public bool MoveNext()
+    {
+        if (_current == null)
+        {
+            _current = list?.First;
+            return _current != null;
+        }
+        else
+        {
+            _current = _current.Next
+                ?? _current!.List?.First;
+            return true;
+        }
+    }
+    public void Reset()
+    {
+        _current = null;
+    }
+    public void Dispose() { }
+ }
+
+
+public static class CircularLinkedListExtensions
+ {
+    public static LinkedListNode<T>? Next<T>(
+        this LinkedListNode<T> n)
+    {
+        return n != null && n.List != null
+            ? n.Next ?? n.List.First
+            : null;
+    }
+ }
+
+
+ Example – spin the wheel
+
+CircularLinkedList<string> categories = new();
+ categories.AddLast("Sport");
+ categories.AddLast("Culture");
+ categories.AddLast("History");
+ categories.AddLast("Geography");
+ categories.AddLast("People");
+ categories.AddLast("Technology");
+ categories.AddLast("Nature");
+ categories.AddLast("Science");
+
+bool isStopped = true;
+ Random random = new();
+ DateTime targetTime = DateTime.Now;
+ int ms = 0;
+ foreach (string category in categories)
+ {
+    if (isStopped)
+    {
+        Console.WriteLine("Press [Enter] to start.");
+        ConsoleKey key = Console.ReadKey().Key;
+        if (key == ConsoleKey.Enter)
+        {
+            ms = random.Next(1000, 5000);
+            targetTime = DateTime.Now.AddMilliseconds(ms);
+            isStopped = false;
+            Console.WriteLine(category);
+        }
+        else { return; }
+    }
+    else
+    {
+        int remaining = (int)(targetTime
+            - DateTime.Now).TotalMilliseconds;
+        int waiting = Math.Max(100, (ms - remaining) / 5);
+        await Task.Delay(waiting);
+        if (DateTime.Now >= targetTime)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            isStopped = true;
+        }
+        Console.WriteLine(category);
+
+Console.ResetColor();
+ }
+ }
+
+
+isStopped, which indicates whether the wheel is currently stopped
+ random, for drawing random values of wheel spin in milliseconds
+ targetTime, which is the target time when the wheel should stop
+ ms, which is the last drawn number of milliseconds for wheel-spinning
+
+
+
+
+Circular doubly linked lists
+
+allows you not only to iterate indefinitely in the forward direction but also in the backward
+ direction.
+
+
+
+
+ public static class CircularLinkedListExtensions
+ {
+    public static LinkedListNode<T>? Next<T>(
+        this LinkedListNode<T> n)
+    {
+        return n != null && n.List != null
+            ? n.Next ?? n.List.First
+            : null;
+    }
+    public static LinkedListNode<T>? Prev<T>(
+        this LinkedListNode<T> n)
+    {
+
+	return n != null && n.List != null
+ 	? n.Previous ?? n.List.Last
+ 	: null;
+ 	}
+ }
+
+Example – art gallery
+
+string[][] arts = GetArts();
+CircularLinkedList<string[]> images = new();
+foreach (string[] art in arts) { images.AddLast(art); }
+LinkedListNode<string[]> node = images.First!;
+ ConsoleKey key = ConsoleKey.Spacebar;
+ do
+ {
+    if (key == ConsoleKey.RightArrow)
+    {
+        node = node.Next()!;
+    }
+    else if (key == ConsoleKey.LeftArrow)
+    {
+        node = node.Prev()!;
+    }
+    Console.Clear();
+    foreach (string line in node.Value)
+    {
+        Console.WriteLine(line);
+    }
+ }
+ while ((key = Console.ReadKey().Key) != ConsoleKey.Escape);
+string[][] GetArts() => [
+    [
+        "  +-----+  ",
+        "o-| o o |-o",
+        "  |  -  |  ",
+        "  +-----+  ",
+        "    | |    "
+    ],
+    [
+        "o +-----+  ",
+        " \\| o o |\\ ",
+        "  |  -  | o",
+        "  +-----+  ",
+        "    / |    "
+    ],
+    [
+"  +-----+ o",
+        " /| o o |/ ",
+        "o |  -  |  ",
+        "  +-----+  ",
+        "    | \\    "
+    ]
+ ];
+
+
+"List-related interfaces"
+
+IEnumerable simple iteration over a collection GetEnumerator
+
+ ICollection manipulating the collection
+Add adds a given item to the collection
+ Clear removes all the items from the collection
+ Contains checks whether a given item exists in the collection
+ Remove removes the first occurrence of a given item from the collection
+
+Count IsReadOnly CopyTo
+
+ IList
+access items within the collection by an index
+
+IndexOf returns an index of a given item in the collection
+ Insert inserts a given item at a specified index in the collection
+ RemoveAt removes an item at a specified index in the collection
+
+LinkedList generic class implements both generic and non-generic variants of the ICollection and IEnumerable interfaces Go To Definition  F12
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
