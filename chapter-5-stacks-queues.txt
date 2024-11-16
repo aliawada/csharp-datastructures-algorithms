@@ -1,0 +1,653 @@
+Stacks and Queues
+limited access data structures
+
+you cannot access every element from the structure
+the way of getting elements is strictly specified
+
+ Stacks
+add a new element only at the top		push
+ to get an element only by removing it from the top		pop
+
+LIFO		Last-In First-Out
+
+Push inserts an element at the top of the stack
+ Pop removes an element from the top of the stack and returns it
+ Peek returns an element from the top of the stack without removing it
+
+for removing all elements from the stack (Clear) 
+for checking whether a given element is available in the stack (Contains)
+
+Example – reversing a word
+
+string text = "MARCIN";
+ Stack<char> chars = new();
+ foreach (char c in text) { chars.Push(c); }
+ while (chars.Count > 0) { Console.Write(chars.Pop()); }
+
+
+ Example – Tower of Hanoi
+ move all the discs from the first rod to the  second one
+cannot place a bigger disc on a smaller one
+can only move one disc at a time
+can only take a disc from the top of any rod
+
+ Moving one disc: Such a case is trivial, and you just need to move a disc from FROM to TO,
+ without using the AUXILIARY rod.
+
+Moving two discs: You move one disc from FROM to AUXILIARY. Then, you move the
+ remaining disc from FROM to TO. At the end, you move a disc from AUXILIARY to TO.
+
+Moving three discs: You start by moving two discs from FROM to AUXILIARY, using the
+ mechanism described earlier. The operation involves TO as the auxiliary rod. Then, you move
+ the remaining disc from FROM to TO, and then move two discs from AUXILIARY to TO, using
+ FROM as the auxiliary rod.
+
+
+
+ public class Game
+ {
+    public Stack<int> From { get; private set; }
+    public Stack<int> To { get; private set; }
+    public Stack<int> Auxiliary { get; private set; }
+    public int DiscsCount { get; private set; }
+    public int MovesCount { get; private set; }
+    public event EventHandler<EventArgs>? MoveCompleted;
+
+    public Game(int discsCount)
+    {
+    	DiscsCount = discsCount;
+    	From = new Stack<int>();
+    	To = new Stack<int>();
+    	Auxiliary = new Stack<int>();
+    	for (int i = 0; i < discsCount; i++)
+    	{
+        int size = discsCount - i;
+        From.Push(size);
+    	}
+    }
+
+ public async Task MoveAsync(int discs, Stack<int> from,
+ Stack<int> to, Stack<int> auxiliary)
+ {
+ if (discs == 0) { return; }
+ await MoveAsync(discs - 1, from, auxiliary, to);
+ to.Push(from.Pop());
+ MovesCount++;
+ MoveCompleted?.Invoke(this, EventArgs.Empty);
+ await Task.Delay(250);
+ await MoveAsync(discs - 1, auxiliary, to, from);
+ }
+ }
+
+public class Visualization
+ {
+    private readonly Game _game;
+    private readonly int _columnSize;
+    private readonly char[,] _board;
+    public Visualization(Game game)
+    {
+        _game = game;
+        _columnSize = Math.Max(6,
+            GetDiscWidth(_game.DiscsCount) + 2);
+        _board = new char[_game.DiscsCount,
+            _columnSize * 3];
+    }
+
+private int GetDiscWidth(int size) => (2 * size) - 1;
+
+public void Show(Game game)
+ {
+    Console.Clear();
+    if (game.DiscsCount <= 0) { return; }
+    FillEmptyBoard();
+    FillRodOnBoard(1, game.From);
+ FillRodOnBoard(2, game.To);
+    FillRodOnBoard(3, game.Auxiliary);
+    Console.WriteLine(Center("FROM")
+        + Center("TO") + Center("AUXILIARY"));
+    DrawBoard();
+    Console.WriteLine($"\nMoves: {game.MovesCount}");
+    Console.WriteLine($"Discs: {game.DiscsCount}");
+ }
+
+private void FillEmptyBoard()
+ {
+    for (int y = 0; y < _board.GetLength(0); y++)
+    {
+        for (int x = 0; x < _board.GetLength(1); x++)
+        {
+            _board[y, x] = ' ';
+        }
+    }
+ }
+
+private void FillRodOnBoard(int column, Stack<int> stack)
+ {
+    int discsCount = _game.DiscsCount;
+    int margin = _columnSize * (column - 1);
+    for (int y = 0; y < stack.Count; y++)
+    {
+        int size = stack.ElementAt(y);
+        int row = discsCount - (stack.Count - y);
+        int columnStart = margin + discsCount - size;
+        int columnEnd = columnStart + GetDiscWidth(size);
+        for (int x = columnStart; x <= columnEnd; x++)
+        {
+            _board[row, x] = '=';
+        }
+}
+ }
+
+ private string Center(string text)
+ {
+    int margin = (_columnSize - text.Length) / 2;
+    return text.PadLeft(margin + text.Length)
+        .PadRight(_columnSize);
+ }
+
+ private void DrawBoard()
+ {
+    for (int y = 0; y < _board.GetLength(0); y++)
+    {
+        string line = string.Empty;
+        for (int x = 0; x < _board.GetLength(1); x++)
+        {
+            line += _board[y, x];
+        }
+        Console.WriteLine(line);
+    }
+ }
+ }
+
+Program.cs
+
+ Game game = new(10);
+ Visualization vis = new(game);
+ game.MoveCompleted += (s, e) => vis.Show((Game)s!);
+await game.MoveAsync(game.DiscsCount,
+ game.From, game.To, game.Auxiliary);
+
+ the number of moves can be calculated with the formula 2"n-1
+
+
+
+
+
+ Queues
+to add a new element only at the end of the queue		enqueue
+to get an element only from the beginning of the queue		dequeue
+
+FIFO	First-In First-Out
+
+recursive data structure
+a queue can be either empty or consists of the first element and the rest of the queue, which also forms a queue
+
+Enqueue adds an element at the end of the queue
+ Dequeue removes an element from the beginning of the queue and returns it
+ Peek returns an element from the beginning of the queue without removing it
+ Clear removes all elements from the queue
+ Contains checks whether the queue contains the given element
+
+ List<int> items = [2, -4, 1, 8, 5];
+ Queue<int> queue = new();
+ items.ForEach(queue.Enqueue);			items.ForEach(i => queue.Enqueue(i));
+ while (queue.Count > 0)
+ {
+ Console.WriteLine(queue.Dequeue());
+ }
+
+
+
+Example – call center with a single consultant
+many clients 
+only one consultant
+
+public class IncomingCall
+ {
+ public int Id { get; set; }
+ public int ClientId { get; set; }
+ public DateTime CallTime { get; set; }
+ public DateTime? AnswerTime { get; set; }
+ public DateTime? EndTime { get; set; }
+ public string? Consultant { get; set; }
+ }
+
+ public class CallCenter
+ {
+ private int _counter = 0;
+ public Queue<IncomingCall> Calls { get; private set; }
+ public CallCenter() =>
+ Calls = new Queue<IncomingCall>();
+
+public IncomingCall Call(int clientId)
+ {
+    IncomingCall call = new()
+    {
+        Id = ++_counter,
+        ClientId = clientId,
+        CallTime = DateTime.Now
+    };
+    Calls.Enqueue(call);
+    return call;
+ }
+
+public IncomingCall? Answer(string consultant)
+ {
+    if (!AreWaitingCalls()) { return null; }
+    IncomingCall call = Calls.Dequeue();
+    call.Consultant = consultant;
+    call.AnswerTime = DateTime.Now;
+    return call;
+ }
+
+ public void End(IncomingCall call)
+ => call.EndTime = DateTime.Now;
+
+public bool AreWaitingCalls() => Calls.Count > 0;
+
+ }
+
+Program.cs
+ Random random = new();
+ CallCenter center = new();
+ center.Call(1234);
+ center.Call(5678);
+ center.Call(1468);
+ center.Call(9641);
+ while (center.AreWaitingCalls())
+ {
+ IncomingCall call = center.Answer("Marcin")!;
+ Log($"Call #{call.Id} from client #{call.ClientId}
+ answered by {call.Consultant}.");
+ await Task.Delay(random.Next(1000, 10000));
+ center.End(call);
+ Log($"Call #{call.Id} from client #{call.ClientId}
+ ended by {call.Consultant}.");
+ }
+
+ void Log(string text) =>
+ Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {text}");
+
+
+
+
+
+/the thread-safe version of the queue related class/
+ ConcurrentQueue class
+
+ IncomingCall class
+
+  modifications CallCenter class
+
+using System.Collections.Concurrent;
+ public class CallCenter
+ {
+    private int _counter = 0;
+    public ConcurrentQueue<IncomingCall> Calls
+        { get; private set; }
+    public CallCenter() => Calls =
+        new ConcurrentQueue<IncomingCall>();
+
+Answer method
+TryDequeue
+public IncomingCall? Answer(string consultant)
+ {
+    if (!Calls.IsEmpty
+        && Calls.TryDequeue(out IncomingCall? call))
+    {
+        call.Consultant = consultant;
+        call.AnswerTime = DateTime.Now;
+        return call;
+    }
+    return null;
+ }
+
+AreWaitingCalls method to use the IsEmpty
+ property instead of Count,
+
+public bool AreWaitingCalls() => !Calls.IsEmpty;
+
+ }
+
+
+ Program.cs
+Random random = new();
+ CallCenter center = new();
+ Parallel.Invoke(
+  () => Clients(center),
+  () => Consultant(center, "Marcin", ConsoleColor.Red),
+  () => Consultant(center, "James", ConsoleColor.Yellow),
+  () => Consultant(center, "Olivia", ConsoleColor.Green));
+
+Parallel class from the System.Threading.Tasks
+
+ void Clients(CallCenter center)
+ {
+    while (true)
+    {
+        int clientId = random.Next(1, 10000);
+        IncomingCall call = center.Call(clientId);
+        Log($"Incoming call #{call.Id}
+            from client #{clientId}");
+        Log($"Waiting calls in the queue:
+            {center.Calls.Count}");
+        Thread.Sleep(random.Next(500, 2000));
+    }
+ }
+
+ void Consultant(CallCenter center, string name,
+    ConsoleColor color)
+ {
+    while (true)
+    {
+Thread.Sleep(random.Next(500, 1000));
+        IncomingCall? call = center.Answer(name);
+        if (call == null) { continue; }
+        Log($"Call #{call.Id} from client #{call.ClientId}
+            answered by {call.Consultant}.", color);
+        Thread.Sleep(random.Next(1000, 10000));
+        center.End(call);
+        Log($"Call #{call.Id} from client #{call.ClientId}
+            ended by {call.Consultant}.", color);
+    }
+ }
+
+void Log(string text,
+    ConsoleColor color = ConsoleColor.Gray)
+ {
+    Console.ForegroundColor = color;
+    Console.WriteLine(
+        $"[{DateTime.Now:HH:mm:ss.fff}] {text}");
+    Console.ResetColor();
+ }
+
+
+
+
+
+
+
+
+ Priority queues
+The elements are dequeued starting
+ from those with the highest priority. Within each priority, you dequeue
+ items in the same order as in a standard queue
+
+built-in generic class
+PriorityQueue
+System.Collections.Generic
+
+ Enqueue adds an element to the priority queue
+ Dequeue removes an element from the beginning and returns it
+Clear removes all elements from the priority queue
+ Peek returns an element from the beginning of the queue without removing it
+
+ TryDequeue and
+ TryPeek.
+
+another implementation
+NuGet packages
+OptimizedPriorityQueue
+
+ HOW TO INSTALL A NUGET PACKAGE?
+Manage NuGet Packages
+Solution Explorer
+Browse
+Search
+Install
+
+OptimizedPriorityQueue
+SimplePriorityQueue
+
+Enqueue adds an element to the priority queue
+ Dequeue removes an element from the beginning of the queue and returns it
+ GetPriority returns the priority of the element
+UpdatePriority updates the priority of the element
+ Contains checks whether the element exists in the priority queue
+ Clear removes all elements from the priority queue
+
+Count
+First
+TryDequeue and TryRemove
+
+using Priority_Queue;
+ SimplePriorityQueue<string> queue = new();
+ queue.Enqueue("Marcin", 1);
+ queue.Enqueue("Lily", 1);
+ queue.Enqueue("Mary", 2);
+ queue.Enqueue("John", 0);
+ queue.Enqueue("Emily", 1);
+ queue.Enqueue("Sarah", 2);
+ queue.Enqueue("Luke", 1);
+ while (queue.Count > 0)
+ {
+ Console.WriteLine(queue.Dequeue());
+ }
+
+
+ Example – call center with priority support
+ IncomingCall class
+public class IncomingCall
+ {
+    public int Id { get; set; }
+    public int ClientId { get; set; }
+    public DateTime CallTime { get; set; }
+    public DateTime? AnswerTime { get; set; }
+    public DateTime? EndTime { get; set; }
+    public string? Consultant { get; set; }
+    public bool IsPriority { get; set; }
+ }
+
+ CallCenter class
+Calls property	 SimplePriorityQueue<IncomingCall>
+
+ public class CallCenter
+ {
+    private int _counter = 0;
+    public SimplePriorityQueue<IncomingCall> Calls
+        { get; private set; }
+    public CallCenter() => Calls =
+        new SimplePriorityQueue<IncomingCall>();
+
+Call method
+ public IncomingCall Call(int clientId, bool isPriority)
+ {
+    IncomingCall call = new()
+    {
+        Id = ++_counter,
+        ClientId = clientId,
+CallTime = DateTime.Now,
+        IsPriority = isPriority
+    };
+    Calls.Enqueue(call, isPriority ? 0 : 1);
+    return call;
+ }
+public IncomingCall? Answer(string consultant)
+ {
+    if (!AreWaitingCalls()) { return null; }
+    IncomingCall call = Calls.Dequeue();
+    call.Consultant = consultant;
+    call.AnswerTime = DateTime.Now;
+    return call;
+ }
+ public void End(IncomingCall call) =>
+    call.EndTime = DateTime.Now;
+ public bool AreWaitingCalls() => Calls.Count > 0;
+ }
+
+Program.cs
+Random random = new();
+ CallCenter center = new();
+ center.Call(1234, false);
+ center.Call(5678, true);
+ center.Call(1468, false);
+ center.Call(9641, true);
+ while (center.AreWaitingCalls())
+ {
+    IncomingCall call = center.Answer("Marcin")!;
+    Log($"Call #{call.Id} from client #{call.ClientId} is
+        answered by {call.Consultant}.", call.IsPriority);
+    await Task.Delay(random.Next(1000, 10000));
+    center.End(call);
+    Log($"Call #{call.Id} from client #{call.ClientId} is
+        ended by {call.Consultant}.", call.IsPriority);
+ }
+ void Log(string text, bool isPriority)
+ {
+    Console.ForegroundColor = isPriority
+? ConsoleColor.Red : ConsoleColor.Gray;
+ Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {text}");
+ Console.ResetColor();
+ }
+
+
+
+
+
+
+
+
+Circular queues
+
+ring buffer
+a queue forms a circle
+
+ front and rear elements
+The front one points to the element that
+ will be dequeued first. The rear one points to the element that is the last
+ in the queue
+
+
+
+enqueue operation that adds the item at
+ the end of the queue
+
+dequeue operation that removes an item from
+ the beginning of the queue
+
+CircularQueue class
+ public class CircularQueue<T>(int size)
+ where T : struct
+ {
+ private readonly T[] _items = new T[size];
+ private int _front = -1;
+ private int _rear = -1;
+ private int _count = 0;
+ public int Count { get { return _count; } }
+ }
+
+An array with the stored items (_items)
+ An index of the front and rear elements in the queue (_front and _rear)
+ The current number of elements located in the circular queue (_count)
+
+
+Count
+
+Enqueue method
+public bool Enqueue(T item)
+ {
+    if (_count == _items.Length) { return false; }
+    if (_front < 0) { _front = _rear = 0; }
+    else { _rear = ++_rear % _items.Length; }
+    _items[_rear] = item;
+    _count++;
+    return true;
+ }
+
+ Dequeue method
+public T? Dequeue()
+ {
+    if (_count == 0) { return null; }
+    T result = _items[_front];
+    if (_front == _rear) { _front = _rear = -1; }
+    else { _front = ++_front % _items.Length; }
+    _count--;
+    return result;
+ }
+public T? Peek()
+ {
+ if (_count == 0) { return null; }
+ return _items[_front];
+ }
+
+
+ CircularQueue<int> queue = new(8);
+ queue.Enqueue(2);
+ queue.Enqueue(-4);
+ queue.Enqueue(1);
+ queue.Enqueue(8);
+ queue.Enqueue(5);
+ int item = queue.Dequeue();
+ Console.WriteLine(item);
+
+
+
+ The performance results are great
+O(1) operations
+
+
+Example – gravity roller coaster
+
+Program.cs
+ using QueueItem = (System.DateTime StartedAt,
+    System.ConsoleColor Color);
+ const int rideSeconds = 10;
+ Random random = new();
+ CircularQueue<QueueItem> queue = new(12);
+ ConsoleColor color = ConsoleColor.Black;
+
+
+while (true)
+ {
+    while (queue.Peek() != null)
+    {
+        QueueItem item = queue.Peek()!.Value;
+        TimeSpan elapsed = DateTime.Now - item.StartedAt;
+        if (elapsed.TotalSeconds < rideSeconds) { break; }
+        queue.Dequeue();
+        Log($"> Exits\tTotal: {queue.Count}", item.Color);
+    }
+    bool isNew = random.Next(3) == 1;
+    if (isNew)
+    {
+        color = color == ConsoleColor.White
+            ? ConsoleColor.DarkBlue
+            : (ConsoleColor)(((int)color) + 1);
+        if (queue.Enqueue((DateTime.Now, color)))
+        {
+            Log($"< Enters\tTotal: {queue.Count}", color);
+        }
+        else
+        {
+            Log($"! Not allowed\tTotal: {queue.Count}",
+                ConsoleColor.DarkGray);
+        }
+    }
+    await Task.Delay(500);
+ }
+
+void Log(string text, ConsoleColor color)
+ {
+ Console.ForegroundColor = color;
+ Console.WriteLine($"{DateTime.Now:HH:mm:ss} {text}");
+ Console.ResetColor();
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
