@@ -1,0 +1,550 @@
+Dictionaries and Sets
+to map keys to values and perform fast lookup
+to make various operations on sets
+ 
+Hash tables 	hash map
+It allows you to map keys to particular values
+a very fast lookup for a value based on the key		O(1) operation
+
+hash function is used
+
+same result may be generated for different keys. Such a situation is called a hash
+collision and should be dealt with
+
+hash tables, they are frequently used in many real-world applications, such as for associative arrays,
+database indices, andcache systems
+
+NON-GENERIC AND GENERIC VERSIONS
+
+non-generic (Hashtable) and generic (Dictionary)
+
+Hashtable class
+System.Collections
+
+collection of pairs, where each contains a key
+ and a value. A pair is represented by the DictionaryEntry instance
+
+ using System.Collections;
+ Hashtable hashtable = new()
+ {
+ { "Key #1", "Value #1" },
+ { "Key #2", "Value #2" }
+ };
+ hashtable.Add("Key #3", "Value #3");
+ hashtable["Key #4"] = "Value #4";
+
+ContainsKey method better than try catch method
+null value is incorrect for the key of an element but it is acceptable as a value of an element
+
+return value
+string value = (string)hashtable["Key #1"]!;
+
+ foreach (DictionaryEntry entry in hashtable)
+ {
+ Console.WriteLine($"{entry.Key}: {entry.Value}");
+ }
+ DictionaryEntry type
+ 
+ stored elements (Count)
+ collection of keys and values (Keys and Values)
+ 
+ Add, which adds a new element
+ Remove, which removes an element
+ Clear, which removes all elements
+ ContainsKey, which checks whether the collection contains a given key
+ ContainsValue, which checks whether the collection contains a given value
+ 
+ Example – phone book
+ Hashtable class
+ person’s name is a key and the phone number is a value
+ 
+ Hashtable phoneBook = new()
+ {
+ { "Marcin", "101-202-303" },
+ { "John", "202-303-404" }
+ };
+ phoneBook["Aline"] = "303-404-505";
+ 
+ 
+ Console.WriteLine("Phone numbers:");
+ if (phoneBook.Count == 0)
+ {
+ Console.WriteLine("Empty list.");
+ }
+ 
+ 
+ foreach (DictionaryEntry entry in phoneBook)
+ {
+ Console.WriteLine($"{entry.Key}: {entry.Value}");
+ }
+
+ContainsKey method	 exists (true) or not (false)
+
+Console.Write("\nSearch by name: ");
+ string name = Console.ReadLine() ?? string.Empty;
+ if (phoneBook.ContainsKey(name))
+ {
+ string number = (string)phoneBook[name]!;
+ Console.WriteLine($"Phone number: {number}");
+ }
+ else
+ {
+ Console.WriteLine("Does not exist.");
+ }
+ 
+ Dictionaries
+ strongly typed variant
+ 
+ Dictionary<string, string> dictionary = new()
+ {
+ { "Key #1", "Value #1" },
+ { "Key #2", "Value #2" }
+ };
+ 
+ string value = dictionary["Key #1"];
+ 
+ KeyNotFoundException
+ ContainsKey
+ TryGetValue
+ 
+ add a new element or update a value
+ dictionary["Key #3"] = "Value #3";
+ 
+ Count, which gets the number of stored elements
+ Keys, which returns the collection of keys
+ Values, which returns the collection of values
+ Add, which adds a new element to the dictionary
+ Remove, which removes an element from the dictionary
+ Clear, which removes all the elements from the dictionary
+ ContainsKey, which checks whether the dictionary contains a key
+ ContainsValue, which checks whether the dictionary contains a given value
+ TryGetValue, which tries to get a value for a given key from the dictionary
+ 
+ PERFORMANCE 
+ (using an indexer or TryGetValue), updating an existing one (using an indexer) O(1) operation
+ (ContainsValue) is the O(n) operation
+ 
+ in the loop is an instance of the KeyValuePair
+ foreach (KeyValuePair<string, string> pair in dictionary)
+ {
+ Console.WriteLine($"{pair.Key}: {pair.Value}");
+ }
+ 
+ simplified
+ foreach ((string k, string v) in dictionary)
+ {
+ Console.WriteLine($"{k}: {v}");
+ }
+ 
+ THREAD-SAFE VERSION
+ ConcurrentDictionary class
+ System.Collections.Concurrent
+ 
+ Example – product location
+ 
+ BARCODE -------> AREA
+ 5901020304050 -> A1
+ 5910203040506 -> B5
+ 5920304050607 -> C9
+ 
+ 
+ Dictionary<string, string> products = new()
+ {
+    { "5901020304050", "A1" },
+    { "5910203040506", "B5" },
+    { "5920304050607", "C9" }
+ };
+ products["5930405060708"] = "D7";
+ 
+ string key = "5940506070809";
+ if (!products.ContainsKey(key))
+ {
+    products.Add(key, "A3");
+ }
+ 
+ if (!products.TryAdd(key, "B4"))
+ {
+    Console.WriteLine("Cannot add.");
+ }
+
+
+Console.WriteLine("All products:");
+ if (products.Count == 0) { Console.WriteLine("Empty."); }
+ foreach ((string k, string v) in products)
+ {
+    Console.WriteLine($"{k}: {v}");
+ }
+ 
+ find the location of the product by its barcode
+ use TryGetValue to check whether the element exists
+ 
+ Console.Write("\nSearch by barcode: ");
+ string barcode = Console.ReadLine() ?? string.Empty;
+ if (products.TryGetValue(barcode, out string? location))
+ {
+    Console.WriteLine($"The product is in: {location}.");
+ }
+ else
+ {
+    Console.WriteLine("The product does not exist.");
+ }
+ 
+ Cannot add.
+ All products:
+ 5901020304050: A1
+ 5910203040506: B5
+ 5920304050607: C9
+ 5930405060708: D7
+ 5940506070809: A3
+ Search by barcode: 5901020304050
+ The product is in: A1.
+
+
+Example – user details
+ID   ->  FIRST NAME | LAST NAME | PHONE NUMBER
+ 100  ->  Marcin     | Jamro     | 101-202-303
+ 210  ->  John       | Smith     | 202-303-404
+ 303  ->  Aline      | Weather   | 303-404-505
+ 
+ Employee record
+ 
+ public record Employee(string FirstName, string LastName,
+    string PhoneNumber);
+	
+ Dictionary class
+ 
+ Dictionary<int, Employee> employees = new()
+ {
+    { 100, new Employee("Marcin", "Jamro", "101-202-303") },
+    { 210, new Employee("John", "Smith", "202-303-404") },
+    { 303, new Employee("Aline", "Weather", "303-404-505") }
+ };
+ 
+ do
+ {
+    Console.Write("Enter the identifier: ");
+    string idString = Console.ReadLine() ?? string.Empty;
+    if (!int.TryParse(idString, out int id)) { break; }
+    if (employees.TryGetValue(id, out Employee? Employee))
+    {
+        Console.WriteLine(
+		"Full name: {0} {1}\nPhone number: {2}\n",
+		employee.FirstName,
+		employee.LastName,
+		employee.PhoneNumber);
+	}
+	else { Console.WriteLine("Does not exist.\n"); }
+ }
+ while (true);
+ 
+ 
+ 
+ Enter the identifier: 100
+ Full name: Marcin Jamro
+ Phone number: 101-202-303
+ Enter the identifier: 101
+ Does not exist.
+ 
+ 
+ Sorted dictionaries
+ keep keys sorted all the time
+ 
+ SortedDictionary generic class
+ System.Collections.Generic
+ 
+  SortedDictionary<string, string> dictionary = new()
+ {
+ { "Key #1", "Value #1" },
+ { "Key #2", "Value #2" }
+ };
+ dictionary.Add("Key #3", "Value #3");
+ dictionary["Key #4"] = "Value #4";
+ string value = dictionary["Key #1"];
+ dictionary.TryGetValue("Key #2", out string? result);
+ 
+ number of stored elements (Count)
+ Keys and Values
+ 
+ Add, which adds a new element
+ Remove, which removes an item
+ Clear, which removes all elements
+ ContainsKey, which checks whether the collection contains a particular key
+ ContainsValue, which checks whether the collection contains a given value
+ TryGetValue, which tries to get a value for a given key
+ 
+ foreach loop 	KeyValuePair	Key and Value properties
+ 
+ PERFORMANCE
+  O(log n) operations
+  
+  Example – encyclopedia
+  
+  NAME     -> EXPLANATION
+ Lancut   -> A city located near Rzeszow, with a castle.
+ Rzeszow  -> A capital of the Subcarpathian voivodeship.
+ Warszawa -> A capital city of Poland.
+ Zakopane -> A city located in Tatra mountains in Poland.
+ 
+ menu with two options,
+ namely [A]dd and [L]ist.
+ 
+ 
+  Console.WriteLine("Welcome to your encyclopedia!\n");
+ SortedDictionary<string, string> definitions = [];
+ do
+ {
+    Console.WriteLine("\nChoose option ([A]dd, [L]ist): ");
+    ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+    if (keyInfo.Key == ConsoleKey.A)
+    {
+        Console.Write("Enter the key: ");
+        string key = Console.ReadLine() ?? string.Empty;
+        Console.Write("Enter the explanation: ");
+        string explanation = Console.ReadLine()
+            ?? string.Empty;
+        definitions[key] = explanation;
+    }
+    else if (keyInfo.Key == ConsoleKey.L)
+    {
+        foreach ((string k, string e) in definitions)
+        {
+            Console.WriteLine($"{k}: {e}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Do you want to exit? Y or N.");
+        if (Console.ReadKey().Key == ConsoleKey.Y)
+{
+ break;
+ }
+ }
+ }
+ while (true);
+ 
+ 
+ Welcome to your encyclopedia!
+ Choose option ([A]dd, [L]ist):
+ Enter the key: Zakopane
+ Enter the explanation: A city located in Tatra mountains in Poland.
+ Choose option ([A]dd, [L]ist):
+ Enter the key: Rzeszow
+ Enter the explanation: A capital of the Subcarpathian voivodeship.
+ Choose option ([A]dd, [L]ist):
+ Rzeszow: A capital of the Subcarpathian voivodeship.
+ Zakopane: A city located in Tatra mountains in Poland.
+ Choose option ([A]dd, [L]ist):
+ Do you want to exit? Y or N.
+ 
+ 
+ Hash sets
+ A set is a collection of distinct objects without
+ duplicated elements and without a particular order
+ 
+  two sets, named A and B
+  The union A∪B	a set with all elements that belong to A or B
+  intersection A∩B contains only the elements that belong to both A and B 
+ 
+  subtraction	The result set of A \ B contains elements that are 
+  the members of A and not the members of B
+	
+  symmetric difference 		A ∆ B
+  
+   (A \ B) and (B \ A)
+  contains elements that belong to only one set, either A or B
+  
+  relationship
+  If every element of B belongs to A, this means that B is a subset of A
+  A is a superset of B
+  if B is a subset of A, but B is not equal to A, B is a proper subset
+  of A, and A is a proper superset of B
+  
+  HashSet class 
+  System.Collections.Generic
+  Count
+  UnionWith
+  IntersectWith
+  ExceptWith
+  SymmetricExceptWith
+  IsSubsetOf
+  IsSupersetOf
+  IsProperSubsetOf
+  IsProperSupersetOf
+  SetEquals  two sets contain the same elements
+  Overlaps two sets have at least one common element
+  Add
+  Remove
+  Clear remove all elements
+  Contains
+  
+  PERFORMANCE
+  O(1) operations
+  O(n) operation resizing
+  
+  Example – coupons
+  .one-time coupon has already been used.
+  
+  
+  HashSet<int> usedCoupons = [];
+ do
+ {
+    Console.Write("Enter the number: ");
+    string number = Console.ReadLine() ?? string.Empty;
+    if (!int.TryParse(number, out int coupon)) { break; }
+    if (usedCoupons.Contains(coupon))
+    {
+        Console.WriteLine("Already used.");
+    }
+    else
+    {
+        usedCoupons.Add(coupon);
+        Console.WriteLine("Thank you!");
+    }
+ }
+ while (true);
+ 
+ Console.WriteLine("\nUsed coupons:");
+ foreach (int coupon in usedCoupons)
+ {
+    Console.WriteLine(coupon);
+ }
+ 
+ Enter the number: 100
+ Thank you!
+ Enter the number: 101
+ Thank you! (...)
+ Enter the number: 101
+ Already used.
+ Enter the number:
+ Used coupons:
+ 100
+ 101
+ 500
+ 345
+ 
+ 
+ Example – swimming pools
+ 
+ PoolTypeEnum enumeration
+ enum PoolTypeEnum
+ {
+    Recreation,
+    Competition,
+    Thermal,
+    Kids
+ };
+ 
+ Program.cs
+ 
+ random variable
+ Random random = new();
+ 
+ Dictionary
+ Dictionary<PoolTypeEnum, HashSet<int>> tickets = new()
+ {
+    { PoolTypeEnum.Recreation, new() },
+    { PoolTypeEnum.Competition, new() },
+    { PoolTypeEnum.Thermal, new() },
+    { PoolTypeEnum.Kids, new() }
+ };
+ 
+ for (int i = 1; i < 100; i++)
+ {
+    foreach ((PoolTypeEnum p, HashSet<int> t) in tickets)
+    {
+        if (random.Next(2) == 1) { t.Add(i); }
+    }
+ }
+ 
+  the number of visitors by pool type
+  Console.WriteLine("Number of visitors by a pool type:");
+ foreach ((PoolTypeEnum p, HashSet<int> t) in tickets)
+ {
+ Console.WriteLine($"- {p}: {t.Count}");
+ }
+ 
+ OrderByDescending
+ Select
+ FirstOrDefault
+ 
+ PoolTypeEnum maxVisitors = tickets
+ .OrderByDescending(t => t.Value.Count)
+ .Select(t => t.Key)
+ .FirstOrDefault();
+ Console.WriteLine($"{maxVisitors} - the most popular.");
+ 
+ who visited at least one pool
+ union of all sets and getting the count of the final set
+ UnionWith method
+ 
+ HashSet<int> any = new(tickets[PoolTypeEnum.Recreation]);
+ any.UnionWith(tickets[PoolTypeEnum.Competition]);
+ any.UnionWith(tickets[PoolTypeEnum.Thermal]);
+ any.UnionWith(tickets[PoolTypeEnum.Kids]);
+ Console.WriteLine($"{any.Count} people visited
+ at least one pool.");
+
+the number of people who visited all pools during one visit
+the intersection of all sets and get the count of the final set
+IntersectWith method
+Count property
+
+HashSet<int> all = new(tickets[PoolTypeEnum.Recreation]);
+ all.IntersectWith(tickets[PoolTypeEnum.Competition]);
+ all.IntersectWith(tickets[PoolTypeEnum.Thermal]);
+ all.IntersectWith(tickets[PoolTypeEnum.Kids]);
+ Console.WriteLine($"{all.Count} people visited all pools.");
+ 
+ Result:
+ Number of visitors by a pool type:- Recreation: 60- Competition: 40- Thermal: 47- Kids: 45
+ Recreation - the most popular.
+ 91 people visited at least one pool.
+ 10 people visited all pools.
+ 
+ 
+ 
+ 
+ “Sorted” sets
+ a “sorted” set can be understood as a combination of HashSet and SortedList,
+ not a set itself
+ 
+ sorted collection of distinct objects without duplicated elements
+ 
+ SortedSet class
+ System.Collections.Generic
+ UnionWith, IntersectWith, ExceptWith,
+ SymmetricExceptWith, Overlaps, IsSubsetOf, IsSupersetOf, IsProperSubsetOf,
+ and IsProperSupersetOf.
+ Min and Max
+ GetViewBetween	 SortedSet instance with values from the given range
+ 
+ PERFORMANCE
+ O(log n) operations
+ 
+ Example – removing duplicates
+ removes duplicates from the list of names
+ the comparison of names should be case-insensitive
+ not allowed to have both Marcin and marcin
+ 
+ List<string> names =
+ [
+ "Marcin", "Mary", "James", "Albert", "Lily",
+ "Emily", "marcin", "James", "Jane"
+ ];
+ SortedSet<string> sorted = new(
+ names,
+ Comparer<string>.Create((a, b) =>
+ a.ToLower().CompareTo(b.ToLower())));
+ foreach (string name in sorted)
+ {
+ Console.WriteLine(name);
+ }
+ 
+  Albert
+ Emily
+ James
+ Jane
+ Lily
+ Marcin
+ Mary
+ 
