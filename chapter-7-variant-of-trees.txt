@@ -1,0 +1,1041 @@
+Variants of Trees
+Basic trees
+
+A tree consists of multiple nodes
+one root	does not contain a parent node	while all other nodes do
+each node can have any number of child nodes	The child nodes of the same node can be named siblings
+A node without children is named a leaf
+subtree	you can find many subtrees in the tree
+
+in practical applications, the number of children is often limited to two
+
+Implementation
+Node
+TreeNode
+
+ public class TreeNode<T>
+ {
+    public T? Data { get; set; }
+    public TreeNode<T>? Parent { get; set; }
+    public List<TreeNode<T>> Children { get; set; } = [];
+    public int GetHeight()
+    {
+        int height = 1;
+        TreeNode<T> current = this;
+        while (current.Parent != null)
+        {
+            height++;
+            current = current.Parent;
+        }
+        return height;
+    }
+ }
+
+The data stored in the node (Data)
+A reference to the parent node (Parent)
+A collection of references to child nodes (Children)
+
+GetHeight method
+while loop
+
+Tree
+public class Tree<T>
+ {
+ public TreeNode<T>? Root { get; set; }
+ }
+ 
+ TreeNode and Tree classes are generic
+ 
+ 
+ Example – hierarchy of identifiers
+ construct a tree with a few nodes
+ each node stores an integer value
+ 
+ Program.cs 
+ 
+ Tree<int> tree = new() { Root = new() { Data = 100 } };
+ tree.Root.Children =
+ [
+ ];
+ new() { Data = 50, Parent = tree.Root },
+ new() { Data = 1, Parent = tree.Root },
+ new() { Data = 150, Parent = tree.Root }
+ tree.Root.Children[2].Children =
+ [
+ new() { Data = 30, Parent = tree.Root.Children[2] }
+ ];
+ 
+ Example – company structure
+ store instances of user-defined classes in nodes divided into three main departments: development, research, and sales.
+ John Smith is head of development
+ He is a boss for Chris Morris
+ who is a manager for two junior developers
+ Eric Green and Ashley Lopez
+ The latter is also a supervisor of Emily Young
+ who is a developer intern
+ 
+ Person record
+ public record Person(string Name, string Role);
+ 
+ 
+ Tree<Person> company = new()
+ {
+    Root = new()
+    {
+        Data = new Person("Marcin Jamro",
+            "Chief Executive Officer"),
+        Parent = null
+    }
+ };
+ company.Root.Children =
+ [
+    new() { Data = new Person("John Smith",
+        "Head of Development"), Parent = company.Root },
+    new() { Data = new Person("Alice Batman",
+        "Head of Research"), Parent = company.Root },
+    new() { Data = new Person("Lily Smith",
+        "Head of Sales"), Parent = company.Root }
+ ];
+ company.Root.Children[2].Children =
+ [
+    new() { Data = new Person("Anthony Black",
+        "Senior Sales Specialist"),
+        Parent = company.Root.Children[2] }
+ ];
+ 
+ Tree class
+ the root node (for the Chief Executive Officer role)
+ child elements (John Smith, Alice Batman, and Lily Smith)
+ 
+ Binary trees
+ a node cannot contain more than two children
+ it can contain zero, one, or two child nodes
+ left child and the right child
+ 
+ Traversal
+ iterate through all the nodes in a tree
+ traversal of a tree
+ pre-order, in-order, and post-order
+ 
+ Pre-order
+ first visit the root node
+ visit the left child
+ the right child is visited
+ to any node in a tree
+ 
+ first visiting the current node, then its left child (the whole left subtree using
+ the pre-order approach recursively), and finally its right child (the right
+ subtree in a similar way)
+ 
+ In-order
+ the left child
+ the current node
+ then the right child
+ 
+ Post-order
+ the left child
+ the right child
+ then the current node
+ 
+ PERFORMANCE
+ O(n) 	linear
+ 
+ 
+ C#-based implementation	Implementation
+ Node
+ BinaryTreeNode
+ inherits from the TreeNode generic class
+ hide the Children definition
+ two properties, Left and Right
+  
+ public class BinaryTreeNode<T>
+    : TreeNode<T>
+ {
+    public new BinaryTreeNode<T>?[] Children { get; set; }
+        = [null, null];
+    public BinaryTreeNode<T>? Left
+    {
+        get { return Children[0]; }
+        set { Children[0] = value; }
+    }
+    public BinaryTreeNode<T>? Right
+    {
+        get { return Children[1]; }
+        set { Children[1] = value; }
+    }
+ }
+ 
+ ensure that the array with child nodes contains exactly two items, initially set to null
+ 
+ Tree
+ BinaryTree
+ public class BinaryTree<T>
+ {
+ public BinaryTreeNode<T>? Root { get; set; }
+ public int Count { get; set; }
+ }
+ 
+ Root indicates the root node (instance of the BinaryTreeNode class)
+ Count stores the total number of nodes placed in the tree
+ 
+ set of methods regarding traversing the tree
+ pre-order
+ TraversePreOrder method
+ private void TraversePreOrder(BinaryTreeNode<T>? node,
+ List<BinaryTreeNode<T>> result)
+ {
+ if (node == null) { return; }
+ result.Add(node);
+ TraversePreOrder(node.Left, result);
+ TraversePreOrder(node.Right, result);
+ }
+ 
+ current node (node)
+ list of already visited nodes (result)
+ 
+ in-order
+ TraverseInOrder method
+ private void TraverseInOrder(BinaryTreeNode<T>? node,
+ List<BinaryTreeNode<T>> result)
+ {
+ if (node == null) { return; }
+    TraverseInOrder(node.Left, result);
+    result.Add(node);
+    TraverseInOrder(node.Right, result);
+ }
+ 
+ TraverseInOrder method for the left child
+ start the in-order traversal for the right child
+ 
+ post-order
+ private void TraversePostOrder(BinaryTreeNode<T>? node,
+    List<BinaryTreeNode<T>> result)
+ {
+    if (node == null) { return; }
+    TraversePostOrder(node.Left, result);
+    TraversePostOrder(node.Right, result);
+    result.Add(node);
+ }
+ 
+ public method for traversing the tree in various modes
+ calls the private methods
+ public List<BinaryTreeNode<T>> Traverse(TraversalEnum mode)
+ {
+    List<BinaryTreeNode<T>> nodes = [];
+    if (Root == null) { return nodes; }
+    switch (mode)
+    {
+        case TraversalEnum.PreOrder:
+            TraversePreOrder(Root, nodes);
+            break;
+        case TraversalEnum.InOrder:
+            TraverseInOrder(Root, nodes);
+            break;
+        case TraversalEnum.PostOrder:
+            TraversePostOrder(Root, nodes);
+            break;
+    }
+    return nodes;
+ }
+ 
+ TraversalEnum
+ public enum TraversalEnum { PreOrder, InOrder, PostOrder }
+ 
+ GetHeight
+ public int GetHeight() => Root != null
+ ? Traverse(TraversalEnum.PreOrder)
+ .Max(n => n.GetHeight())
+ : 0;
+ 
+ Example – simple quiz
+ BinaryTree and BinaryTreeNode classes
+ stores only a string value as data
+ 
+ BinaryTree<string> tree = GetTree();
+ BinaryTreeNode<string>? node = tree.Root;
+ while (node != null)
+ {
+	if (node.Left != null && node.Right != null)
+    {
+        Console.WriteLine(node.Data);
+        node = Console.ReadKey(true).Key switch
+        {
+            ConsoleKey.Y => node.Left,
+            ConsoleKey.N => node.Right,
+            _ => node
+        };
+    }
+    else
+    {
+        Console.WriteLine(node.Data);
+        node = null;
+    }
+ }
+ 
+ GetTree method
+ check whether the left and right child nodes exist
+ whether it is a question and not an answer
+ equal to Y
+ current node’s left child is used
+ pressing N
+ current node’s right child is used
+ answer to be shown, it is presented in the console, and null is assigned to the node variable
+ Therefore, you break out of the while loop
+ 
+ GetTree method
+ BinaryTree<string> GetTree()
+ {
+    BinaryTree<string> tree = new();
+    tree.Root = new BinaryTreeNode<string>()
+    {
+        Data = "Do you have an experience
+            in app development?",
+        Children =
+        [
+            new BinaryTreeNode<string>()
+{
+                Data = "Have you worked as a developer
+                    for 5+ years?",
+                Children =
+                [
+                    new() { Data = "Apply as
+                        a senior developer" },
+                    new() { Data = "Apply as
+                        a middle developer" }
+                ]
+            },
+            new BinaryTreeNode<string>()
+            {
+                Data = "Have you completed a university?",
+                Children =
+                [
+                    new() { Data = "Apply as
+                        a junior developer" },
+                    new BinaryTreeNode<string>()
+                    {
+                        Data = "Will you find some time
+                            during the semester?",
+                        Children =
+                        [
+                            new() { Data = "Apply for
+                                long-time internship" },
+                            new() { Data = "Apply for
+                                summer internship" }
+                        ]
+                    }
+                ]
+            }
+        ]
+    };
+    tree.Count = 9;
+    return tree;
+ }
+ 
+ BinaryTree generic class is created
+ new instance of BinaryTreeNode to the Root property
+ the Children property and specify items directly within such constructions
+ question-related node is an instance of the BinaryTreeNode class with two child nodes
+ while an answer-related node is a leaf
+ does not contain any child nodes
+ 
+ summary 
+ creation of a hierarchy
+ each node can contain at most two children
+ but without any rules about relationships between the nodes
+ check whether a binary tree contains a given value
+ check each node
+ traversing the tree using one of three available modes
+ O(n)
+ 
+ Binary search trees BST
+ limit the number of operations necessary to check whether the tree contains a given value
+ two strict rules regarding relations between nodes in the tree
+ Example - The rules state that for any node, the values of all nodes
+ in its left subtree must be smaller than its value, and the values of all
+ nodes in its right subtree must be greater than its value
+ 
+ CAN YOU ADD DUPLICATES TO BSTS
+ BST can contain two or more elements with the same value
+ a simplified version is given
+ which does not accept more than one element with the same value
+ 
+ topology
+ fat
+ skinny
+ 
+ PERFORMANCE
+ it is much better to have a fat tree with limited height than a skinny tree with a bigger height
+ O(log n)
+ 
+ Implementation
+ requires you to prepare operations of insertion and removal of nodes from a tree
+ 
+ Tree
+ BinarySearchTree class
+ inherits from the BinaryTree generic class
+ public class BinarySearchTree<T>
+ : BinaryTree<T>
+ where T : IComparable
+ {
+ }
+ 
+ it has to implement the IComparable interface
+
+ Lookup
+ Contains method
+ checks whether the tree contains a node with a given value
+ limit the number of comparisons
+ public bool Contains(T data)
+ {
+    BinaryTreeNode<T>? node = Root;
+    while (node != null)
+    {
+        int result = data.CompareTo(node.Data);
+        if (result == 0) { return true; }
+        else if (result < 0) { node = node.Left; }
+        else { node = node.Right; }
+    }
+    return false;
+ }
+ 
+ takes only one parameter
+ while loop exists
+ If they are equal (the comparison returns 0)
+ true is returned to inform that the search is completed
+ 
+ HOW TO COMPARE OBJECTS
+ CompareTo method
+ IComparable interface
+ System namespace
+ compare two values
+ 0 is returned
+ value higher than 0 is returned
+ a value lower than 0 is returned
+ 
+ Insertion
+ find a place for adding a new element
+ not violate BST rules
+ Add method
+  public void Add(T data)
+ {
+    BinaryTreeNode<T>? parent = GetParentForNewNode(data);
+    BinaryTreeNode<T> node = new()
+    {
+        Data = data,
+        Parent = parent
+    };
+    if (parent == null)
+    {
+        Root = node;
+    }
+    else if (data.CompareTo(parent.Data) < 0)
+    {
+        parent.Left = node;
+    }
+    else
+    {
+        parent.Right = node;
+    }
+    Count++;
+ }
+ 
+ takes one parameter
+ find a parent element
+ GetParentForNewNode auxiliary method
+ new node should be added as a child
+ BinaryTreeNode class
+ Data and Parent properties are set
+ whether the found parent element is equal to null
+ It means that there are no nodes in the tree
+ new node should be added as the root
+ Root property
+ addition is smaller than the value of the parent node
+ new node should be added as the left child of the parent node
+ Otherwise, the new node is placed as the right child of the parent node
+ number of elements stored in the tree is incremented
+  private BinaryTreeNode<T>? GetParentForNewNode(T data)
+ {
+    BinaryTreeNode<T>? current = Root;
+    BinaryTreeNode<T>? parent = null;
+    while (current != null)
+    {
+        parent = current;
+        int result = data.CompareTo(current.Data);
+        if (result == 0) { throw new ArgumentException(
+            $"The node {data} already exists."); }
+        else if (result < 0) { current = current.Left; }
+        else { current = current.Right; }
+    }
+    return parent;
+ }
+ 
+ takes one parameter
+ declare two variables
+ (current) and the parent node (parent)
+ modified in a while loop
+ until the algorithm finds a proper place for the new node
+ check whether the value for addition is equal to the value of the current node
+ an exception is thrown because it is not allowed to add more than one element with the same value
+ value for addition is smaller than the value of the current node
+ continues searching for a place for the new node in the left subtree
+ Otherwise the right subtree of the current node is used
+ parent variable is returned to indicate the found location for the new node
+ 
+ Removal
+ Remove
+ only one parameter
+ Remove method
+ public void Remove(T data) => Remove(Root, data);
+ calls another method
+ named Remove
+ private method
+ private void Remove(BinaryTreeNode<T>? node, T data)
+ {
+    if (node == null)
+    {
+        return;
+    }
+    else if (data.CompareTo(node.Data) < 0)
+    {
+        Remove(node.Left, data);
+    }
+    else if (data.CompareTo(node.Data) > 0)
+    {
+        Remove(node.Right, data);
+    }
+    else
+    {
+        if (node.Left == null || node.Right == null)
+        {
+            BinaryTreeNode<T>? newNode =
+                node.Left == null && node.Right == null
+                    ? null
+                    : node.Left ?? node.Right;
+            ReplaceInParent(node, newNode!);
+            Count--;
+        }
+        else
+        {
+			BinaryTreeNode<T> successor =
+            FindMinimumInSubtree(node.Right);
+            node.Data = successor.Data;
+            Remove(successor, successor.Data!);
+        }
+    }
+ }
+ 
+ checks whether the current node exists
+ the Remove method
+ If not, you exit from the method
+ the Remove method tries to find the node to remove
+ comparing the value of the current node with the value for removal
+ Remove method recursively for either the left or right subtree of the current node
+ 
+ Removing a leaf node
+ Removing a node with only a left child
+ Removing a node with only a right child
+ Removing a node with both left and right children
+ 
+ removing a leaf node
+ update a reference to the deleted node in the parent element
+ there will be no reference from the parent node to the deleted node
+ cannot be reached while traversing the tree
+ 
+ Removing a node with only a left child
+ replace a reference to the deleted node (in the parent element)
+ that is a left child of the deleted node
+ 
+ removing a node with only a right child
+ replace a reference to the deleted node (in the parent element)
+ the node that is a right child of the deleted node
+ 
+ ReplaceInParent auxiliary method
+ private void ReplaceInParent(BinaryTreeNode<T> node,
+    BinaryTreeNode<T> newNode)
+ {
+    if (node.Parent != null)
+    {
+        BinaryTreeNode<T> parent =
+            (BinaryTreeNode<T>)node.Parent;
+        if (parent.Left == node) { parent.Left = newNode; }
+        else { parent.Right = newNode; }
+    }
+    else { Root = newNode; }
+    if (newNode != null) { newNode.Parent = node.Parent; }
+ }
+ 
+  takes two parameters
+  the node for removal (node) 
+  the node that should replace it in the parent node (newNode)
+  
+  remove a leaf node
+  just pass null as the second parameter
+  
+  with only one child
+  pass a reference to the left or right child
+  
+  is not equal to null
+  not removing a leaf node
+  
+   Parent property
+   new node should have the same parent
+   
+   the removal of a node with both child nodes
+   find a node with the minimum value in the right
+   you swap the value of the node for removal with the value of the found node
+   call the Remove method recursively for the found node
+   the Remove private method
+   BinaryTreeNode<T> successor =
+   FindMinimumInSubtree(node.Right);
+   node.Data = successor.Data;
+   Remove(successor, successor.Data!);
+   
+   FindMinimumInSubtree auxiliary method
+   private BinaryTreeNode<T> FindMinimumInSubtree(
+   BinaryTreeNode<T> node)
+   {
+   while (node.Left != null) { node = node.Left; }
+   return node;
+   }
+   
+   takes the root of the subtree
+   minimum value should be found
+   a while loop is used  leftmost element
+   no left child
+   current value of the node variable is returned
+   
+   Example – BST visualization
+   create a BST
+   add some nodes
+   remove nodes
+   traverse the tree
+   visualize the tree in the console
+   
+   new instance of the BinarySearchTree class
+   adding three nodes
+   BinarySearchTree<int> tree = new();
+  tree.Root = new BinaryTreeNode<int>() { Data = 100 };
+  tree.Root.Left = new() { Data = 50, Parent = tree.Root };
+  tree.Root.Right = new() { Data = 150, Parent = tree.Root };
+  tree.Count = 3;
+  Visualize(tree, "BST with 3 nodes (50, 100, 150):");
+  
+  Add method
+  Visualize method
+  tree.Add(75);
+ tree.Add(125);
+ Visualize(tree, "BST after adding 2 nodes (75, 125):");
+ 
+  five more nodes 
+  tree.Add(25);
+ tree.Add(175);
+ tree.Add(90);
+ tree.Add(110);
+ tree.Add(135);
+ Visualize(tree, "BST after adding 5 nodes
+ (25, 175, 90, 110, 135):");
+ 
+ removal of various nodes
+ tree.Remove(25);
+Visualize(tree, "BST after removing the node 25:");
+ tree.Remove(50);
+ Visualize(tree, "BST after removing the node 50:");
+ tree.Remove(100);
+ Visualize(tree, "BST after removing the node 100:");
+ 
+ three traversal modes
+ foreach (TraversalEnum mode
+ in Enum.GetValues<TraversalEnum>())
+ {
+ Console.Write($"\n{mode} traversal:\t");
+ Console.Write(string.Join(", ",
+ tree.Traverse(mode).Select(n => n.Data)));
+ }
+ 
+ Visualize method
+ void Visualize(BinarySearchTree<int> tree, string caption)
+ {
+ char[,] console = Initialize(tree, out int width);
+ VisualizeNode(tree.Root, 0, width / 2,
+ console, width);
+ Console.WriteLine(caption);
+ Draw(console);
+ }
+ 
+  two parameters
+  instance of the BinarySearchTree class 
+  caption
+  
+  Initialize auxiliary method
+  VisualizeNode recursive method
+  
+  Initialize method
+  const int ColumnWidth = 5;
+ char[,] Initialize(BinarySearchTree<int> tree,
+    out int width)
+ {
+    int height = tree.GetHeight();
+    width = (int)Math.Pow(2, height) - 1;
+    char[,] console =
+        new char[height * 2, ColumnWidth * width];
+    for (int y = 0; y < console.GetLength(0); y++)
+    {
+        for (int x = 0; x < console.GetLength(1); x++)
+        {
+            console[y, x] = ' ';
+        }
+    }
+    return console;
+ }
+ 
+ Visualize method, VisualizeNode is called
+ void VisualizeNode(BinaryTreeNode<int>? node, int row,
+    int column, char[,] console, int width)
+ {
+    if (node == null) { return; }
+    char[] chars = node.Data.ToString().ToCharArray();
+    int margin = (ColumnWidth - chars.Length) / 2;
+    for (int i = 0; i < chars.Length; i++)
+    {
+        int col = ColumnWidth * column + i + margin;
+        console[row, col] = chars[i];
+    }
+    int columnDelta = (width + 1) /
+        (int)Math.Pow(2, node.GetHeight() + 1);
+    VisualizeNode(node.Left, row + 2,
+        column - columnDelta, console, width);
+    VisualizeNode(node.Right, row + 2,
+        column + columnDelta, console, width);
+    DrawLineLeft(node, row, column, console, columnDelta);
+    DrawLineRight(node, row, column, console, columnDelta);
+ }
+ 
+ VisualizeNode method takes five parameters
+ current node
+ index of a row
+  index of a column
+  char array
+  console variable
+  
+  DrawLineLeft and DrawLineRight
+  void DrawLineLeft(BinaryTreeNode<int> node, int row,
+    int column, char[,] console, int columnDelta)
+ {
+    if (node.Left == null) { return; }
+    int sci = ColumnWidth * (column - columnDelta) + 2;
+    int eci = ColumnWidth * column + 2;
+    for (int x = sci + 1; x < eci; x++)
+    {
+        console[row + 1, x] = '-';
+    }
+    console[row + 1, sci] = '+';
+    console[row + 1, eci] = '+';
+ }
+ 
+ takes five parameters
+ The current node for which the line should be drawn (node)
+ The index of a row (row)
+ The index of a column (column)
+ An array as a screen buffer (console)
+ A delta value calculated in the VisualizeNode method
+ 
+ sci, which stands for start column index
+ eci as end column index
+ 
+ adjust
+ void DrawLineRight(BinaryTreeNode<int> node, int row,
+    int column, char[,] console, int columnDelta)
+ {
+    if (node.Right == null) { return; }
+    int sci = ColumnWidth * column + 2;
+    int eci = ColumnWidth * (column + columnDelta) + 2;
+    for (int x = sci + 1; x < eci; x++)
+    {
+        console[row + 1, x] = '-';
+    }
+    console[row + 1, sci] = '+';
+    console[row + 1, eci] = '+';
+ }
+ 
+ Draw method
+ void Draw(char[,] console)
+ {
+    for (int y = 0; y < console.GetLength(0); y++)
+    {
+        for (int x = 0; x < console.GetLength(1); x++)
+        {
+            Console.Write(console[y, x]);
+        }
+        Console.WriteLine();
+    }
+ }
+ 
+ Pre-order traversal:    110, 75, 90, 150, 125, 135, 175
+ In-order traversal:     75, 90, 110, 125, 135, 150, 175
+ Post-order traversal:   90, 75, 135, 125, 175, 150, 110
+ 
+  sorted in ascending order
+  problem
+  remove nodes only from the given area of a tree
+  when you insert already sorted values
+  fat tree
+  breadth-depth ratio
+  could become a skinny one
+  depicted as a list
+  all nodes have only one child
+  unbalanced trees
+  keep them balanced
+  how to achieve this goal
+  
+  Self-balancing trees
+  keeps the tree balanced all the time while adding and removing nodes
+  performance depends on the shape of the tree
+  can be an O(n) operation
+  significantly improved with O(log n)
+  
+  AVL trees
+  Adelson-Velsky and Landis
+  a binary search tree with the additional requirement that, for each node,
+ the height of its left and right subtrees cannot differ by more than one
+ rotations
+ 
+
+ PERFORMANCE
+  O(log n)
+  available NuGet packages
+  tree-based data structures to benefit from AVL trees
+  
+  Red-black trees
+  RBT
+  variant of self-balancing binary search trees
+  Each node must be colored either red or black
+  All nodes with values cannot be leaf nodes
+  If a node is red, both its children must be black
+  the number of black nodes on the route to a descendant leaf must be the same
+  
+  recoloring
+  rotations
+  
+  PERFORMANCE
+  O(log n)
+
+   available NuGet packages
+ 
+ string-related operations
+ Tries
+ autocomplete
+ spellchecker
+ tries
+  store strings and to perform prefix-based searching
+  A trie is a tree with one root node, where each node represents a string
+ and each edge indicates a character. A trie node contains references to
+ the next nodes as an array with 26 elements, representing 26 chars from
+ the alphabet (from a to z). When you go from the root to each node, you
+ receive a string, which is either a saved word or its substring.
+ 
+  WHY EXACTLY 26 ELEMENTS
+  between a and z
+  
+  ai, aid, aim, air, airplane, airport, algorithm, all, allergy, allow, allowance
+  
+  root node
+  a
+  
+
+  PERFORMANCE
+  O(n) operation
+   efficient data structure for string-based operation
+   
+   Implementation
+   
+   Node
+   public class TrieNode
+ {
+ public TrieNode[] Children { get; set; }
+ = new TrieNode[26];
+ public bool IsWord { get; set; } = false;
+ }
+ 
+ TrieNode class 
+ two properties
+ Children	array with 26 elements
+ IsWord and indicates whether the current node is the last char
+ 
+  Trie
+public class Trie
+ {
+ private readonly TrieNode _root = new();
+ }
+ 
+ public bool DoesExist(string word)
+ {
+    TrieNode current = _root;
+    foreach (char c in word)
+    {
+        TrieNode child = current.Children[c - 'a'];
+        if (child == null) { return false; }
+        current = child;
+    }
+    return current.IsWord;
+ }
+ 
+ insert a word into a trie
+  public void Insert(string word)
+ {
+    TrieNode current = _root;
+    foreach (char c in word)
+    {
+        int i = c - 'a';
+        current.Children[i] = current.Children[i] ?? new();
+        current = current.Children[i];
+    }
+    current.IsWord = true;
+ }
+ 
+ prefix-based searching
+ public List<string> SearchByPrefix(string prefix)
+ {
+    TrieNode current = _root;
+    foreach (char c in prefix)
+    {
+        TrieNode child = current.Children[c - 'a'];
+        if (child == null) { return []; }
+        current = child;
+    }
+    List<string> results = [];
+    GetAllWithPrefix(current, prefix, results);
+    return results;
+ }
+ 
+ List<string> instance to store the result
+ GetAllWithPrefix method
+ private void GetAllWithPrefix(TrieNode node,
+    string prefix, List<string> results)
+ {
+    if (node == null) { return; }
+    if (node.IsWord) { results.Add(prefix); }
+    for (char c = 'a'; c <= 'z'; c++)
+    {
+        GetAllWithPrefix(node.Children[c - 'a'],
+            prefix + c, results);
+    }
+ }
+ 
+ Trie trie = new();
+ trie.Insert("algorithm");
+ trie.Insert("aid");
+ trie.Insert("aim");
+ trie.Insert("air");
+ trie.Insert("ai");
+ trie.Insert("airport");
+ trie.Insert("airplane");
+ trie.Insert("allergy");
+ trie.Insert("allowance");
+ trie.Insert("all");
+ trie.Insert("allow");
+ bool isAir = trie.DoesExist("air");
+ List<string> words = trie.SearchByPrefix("ai");
+ foreach (string word in words)
+ {
+ Console.WriteLine(word);
+ }
+ 
+ radix tree or a compressed trie
+ a space-optimized version of a trie
+ you merge with the parent each node that is the only child of this parent
+ edges can represent a substring
+ 
+ 
+ Example – autocomplete
+ names of countries based on the prefix entered by a user
+ 
+ Countries.txt	 names of countries
+ Afghanistan
+ Albania
+ Algeria (...)
+ Pakistan
+ Palau
+ Panama
+ Papua New Guinea
+ Paraguay
+ Peru
+ Philippines
+ Poland
+ Portugal (...)
+ Zambia
+ Zimbabwe
+ 
+ read its content and form a trie
+ using System.Text.RegularExpressions;
+ Trie trie = new();
+ string[] countries =
+ await File.ReadAllLinesAsync("Countries.txt");
+ foreach (string country in countries)
+ {
+ Regex regex = new("[^a-z]");
+ string name = country.ToLower();
+ name = regex.Replace(name, string.Empty);
+ trie.Insert(name);
+ }
+
+regular expression and the Regex class from the System.Text.RegularExpressions
+string text = string.Empty;
+ while (true)
+ {
+ Console.Write("Enter next character: ");
+ ConsoleKeyInfo key = Console.ReadKey();
+ if (key.KeyChar < 'a' || key.KeyChar > 'z') { return; }
+ text = (text + key.KeyChar).ToLower();
+ List<string> results = trie.SearchByPrefix(text);
+ if (results.Count == 0) { return; }
+ Console.WriteLine(
+ $"\nSuggestions for {text.ToUpper()}:");
+ results.ForEach(r => Console.WriteLine(r.ToUpper()));
+ Console.WriteLine();
+ }
+ 
+ Results:
+ Enter next character: p
+ Suggestions for P:
+ PAKISTAN
+ PALAU
+ PANAMA
+ PAPUANEWGUINEA
+ PARAGUAY
+ PERU
+ PHILIPPINES
+ POLAND
+ PORTUGAL
+ Enter next character: o
+ Suggestions for PO:
+ POLAND
+ PORTUGAL
+ Enter next character: l
+ Suggestions for POL:
+ POLAND
+ Enter next character: e
+ 
+ 
+ Heaps
+ another variant of a tree
+ binary heap exists in two versions: min-heap and max-heap
+ For min-heap: The value of each node must be greater than or equal to the value of its
+ parent node
+ For max-heap: The value of each node must be less than or equal to the value of its parent
+ node
+ 
+ the root node always contains the smallest value (in the min-heap) or the larges value (in the max-heap)
+ 
+ complete binary tree rule
+  each node cannot contain more than two children and all
+ levels of a tree must be fully filled, except the last one, which must be
+ filled from left to right
+ 
+ priority queue
+ heap sort algorithm
+ graph algorithms
+ 
+ NuGet packages
+ PommaLabs.Hippie
+ NuGet Package Manager
+ binary heaps, binomial heaps, and Fibonacci heaps
