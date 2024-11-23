@@ -1,0 +1,933 @@
+Exploring Graphs
+
+trees also belong to graphs
+
+explanation of nodes and edges
+
+are commonly used  for storing data  finding a road
+
+representation will be covered using an adjacency list and matrix
+
+learn about two modes of graph traversal depth-first search (DFS) and breadth-first search (BFS)
+
+minimum spanning trees (MSTs) Kruskal’s and Prim’s
+
+coloring of nodes
+
+the shortest path Dijkstra’s algorithm
+
+
+
+The concept of graphs
+a graph is a data structure that consists of nodes (also called vertices) and edges.
+Each edge connects two nodes.
+
+a graph can contain cycles as well as separate groups of nodes, which are not connected
+
+a graph where all the nodes are connected with undirected edges – that is, bidirectional edges
+it is possible to travel between nodes in both directions
+
+edges are presented graphically as straight lines
+
+a graph contains undirected edges, it is an undirected graph
+
+traveling between nodes is possible only in one direction use directed edges – that is, unidirectional edges
+straight lines with arrows indicating the direction of an edge
+a graph contains directed edges, it can be named a directed graph
+
+WHAT ABOUT SELF-LOOPS
+Each is an edge that connects a given node with itself
+
+also specify weights (also referred to as costs) 
+weighted edge
+graph is named a weighted graph
+
+no weights are provided, unweighted edges
+called an unweighted graph
+
+Applications
+structure of friends available on social media
+searching for the shortest path
+
+Representations
+adjacency list
+adjacency matrix
+
+Adjacency list
+extend the data of a node by specifying a list of its neighbors
+
+Adjacency matrix
+a two-dimensional array to show which nodes are connected by edges
+same number of rows and columns equal to the number of nodes
+store information about a particular edge in an element at a given row and column in the matrix
+quick way of checking whether two particular nodes are connected by an edge
+
+Implementation
+Node
+public class Node<T>
+{
+ public int Index { get; set; }
+ public required T Data { get; set; }
+ public List<Node<T>> Neighbors { get; set; } = [];
+ public List<int> Weights { get; set; } = [];
+ public override string ToString() => $"Index: {Index}.
+ Data: {Data}. Neighbors: {Neighbors.Count}.";
+}
+
+The first property (Index) stores an index of a particular node in a collection of nodes in a
+graph to simplify the process of accessing a particular element. Thus, it is possible to easily get
+an instance of the Node class by using an index.
+The next property is named Data and just stores some data in the node. It is worth
+mentioning that the type of such data is consistent with the type specified while creating an
+instance of the generic class.
+The Neighbors property represents the adjacency list for a particular node. Thus, it contains
+references to the Node instances representing adjacent nodes.
+The last property is named Weights and stores weights assigned to adjacent edges. In the
+case of a weighted graph, the number of elements in the Weights list is the same as the
+number of neighbors (Neighbors). If a graph is unweighted, the Weights list is empty
+
+Edge
+public class Edge<T>
+{
+ public required Node<T> From { get; set; }
+    public required Node<T> To { get; set; }
+    public int Weight { get; set; }
+    public override string ToString() => $"{From.Data}
+        -> {To.Data}. Weight: {Weight}.";
+}
+
+Graph
+public class Graph<T>
+{
+    public required bool IsDirected { get; init; }
+    public required bool IsWeighted { get; init; }
+    public List<Node<T>> Nodes { get; set; } = [];
+}
+
+public Edge<T>? this[int from, int to]
+ {
+    get
+    {
+        Node<T> nodeFrom = Nodes[from];
+        Node<T> nodeTo = Nodes[to];
+        int i = nodeFrom.Neighbors.IndexOf(nodeTo);
+        if (i < 0) { return null; }
+        Edge<T> edge = new()
+		{
+            From = nodeFrom,
+            To = nodeTo,
+            Weight = i < nodeFrom.Weights.Count
+                ? nodeFrom.Weights[i] : 0
+        };
+        return edge;
+    }
+ }
+ 
+  AddNode method
+  public Node<T> AddNode(T value)
+ {
+    Node<T> node = new() { Data = value };
+    Nodes.Add(node);
+    UpdateIndices();
+    return node;
+ }
+ 
+ UpdateIndices method is called to update the indices of all the nodes stored in the
+ collection.
+private void UpdateIndices()
+{
+    int i = 0;
+    Nodes.ForEach(n => n.Index = i++);
+}
+ 
+ RemoveNode method
+ public void RemoveNode(Node<T> nodeToRemove)
+ {
+    Nodes.Remove(nodeToRemove);
+    UpdateIndices();
+    Nodes.ForEach(n => RemoveEdge(n, nodeToRemove));
+ }
+ 
+ AddEdge method
+ public void AddEdge(Node<T> from, Node<T> to, int w = 0)
+ {
+    from.Neighbors.Add(to);
+    if (IsWeighted) { from.Weights.Add(w); }
+    if (!IsDirected)
+    {
+        to.Neighbors.Add(from);
+        if (IsWeighted) { to.Weights.Add(w); }
+    }
+ }
+ 
+ RemoveEdge method
+ public void RemoveEdge(Node<T> from, Node<T> to)
+ {
+    int index = from.Neighbors.FindIndex(n => n == to);
+    if (index < 0) { return; }
+    from.Neighbors.RemoveAt(index);
+    if (IsWeighted) { from.Weights.RemoveAt(index); }
+    if (!IsDirected)
+    {
+        index = to.Neighbors.FindIndex(n => n == from);
+        if (index < 0) { return; }
+        to.Neighbors.RemoveAt(index);
+        if (IsWeighted) { to.Weights.RemoveAt(index); }
+    }
+ }
+ 
+ GetEdges
+ public List<Edge<T>> GetEdges()
+ {
+    List<Edge<T>> edges = [];
+    foreach (Node<T> from in Nodes)
+    {
+        for (int i = 0; i < from.Neighbors.Count; i++)
+        {
+            int weight = i < from.Weights.Count
+                ? from.Weights[i] : 0;
+            Edge<T> edge = new()
+            {
+                From = from,
+				To = from.Neighbors[i],
+                Weight = weight
+            };
+            edges.Add(edge);
+        }
+    }
+    return edges;
+ }
+ 
+ 
+ 
+Example – undirected and unweighted edges
+
+Graph<int> graph = new()
+ { IsDirected = false, IsWeighted = false };
+
+Node<int> n1 = graph.AddNode(1);
+Node<int> n2 = graph.AddNode(2);
+Node<int> n3 = graph.AddNode(3);
+Node<int> n4 = graph.AddNode(4);
+Node<int> n5 = graph.AddNode(5);
+Node<int> n6 = graph.AddNode(6);
+Node<int> n7 = graph.AddNode(7);
+Node<int> n8 = graph.AddNode(8);
+
+graph.AddEdge(n1, n2);
+graph.AddEdge(n1, n3);
+graph.AddEdge(n2, n4);
+graph.AddEdge(n3, n4);
+graph.AddEdge(n4, n5);
+graph.AddEdge(n5, n6);
+graph.AddEdge(n5, n7);
+graph.AddEdge(n5, n8);
+graph.AddEdge(n6, n7);
+graph.AddEdge(n7, n8);
+
+Example – directed and weighted edges
+
+Graph<int> graph = new()
+ { IsDirected = true, IsWeighted = true };
+ 
+Node<int> n1 = graph.AddNode(1);
+Node<int> n2 = graph.AddNode(2);
+Node<int> n3 = graph.AddNode(3);
+Node<int> n4 = graph.AddNode(4);
+Node<int> n5 = graph.AddNode(5);
+Node<int> n6 = graph.AddNode(6);
+Node<int> n7 = graph.AddNode(7);
+Node<int> n8 = graph.AddNode(8);
+
+graph.AddEdge(n1, n2, 9);
+graph.AddEdge(n1, n3, 5);
+graph.AddEdge(n2, n1, 3);
+graph.AddEdge(n2, n4, 18);
+graph.AddEdge(n3, n4, 12);
+graph.AddEdge(n4, n2, 2);
+graph.AddEdge(n4, n8, 8);
+graph.AddEdge(n5, n4, 9);
+graph.AddEdge(n5, n6, 2);
+graph.AddEdge(n5, n7, 5);
+graph.AddEdge(n5, n8, 3);
+graph.AddEdge(n6, n7, 1);
+graph.AddEdge(n7, n5, 4);
+graph.AddEdge(n7, n8, 6);
+graph.AddEdge(n8, n5, 3);
+
+Traversal
+visiting all of the nodes in some particular order
+DFS or BFS
+searching for a given node in a graph
+
+Depth-first search
+DFS
+First, it proceeds to the next levels of the nodes
+instead of visiting all the neighbors of the current node
+ 
+public List<Node<T>> DFS()
+{
+ bool[] isVisited = new bool[Nodes.Count];
+ List<Node<T>> result = [];
+ DFS(isVisited, Nodes[0], result);
+ return result;
+}
+ 
+variant of the DFS method
+private void DFS(bool[] isVisited, Node<T> node, List<Node<T>> result)
+{
+    result.Add(node);
+    isVisited[node.Index] = true;
+    foreach (Node<T> neighbor in node.Neighbors)
+    {
+        if (!isVisited[neighbor.Index])
+        {
+            DFS(isVisited, neighbor, result);
+        }
+    }
+}
+ 
+Program.cs
+ 
+Graph<int> graph = new()
+    { IsDirected = true, IsWeighted = true };
+	
+Node<int> n1 = graph.AddNode(1); (...)
+Node<int> n8 = graph.AddNode(8);
+ 
+graph.AddEdge(n1, n2, 9); (...)
+graph.AddEdge(n8, n5, 3);
+ 
+List<Node<int>> nodes = graph.DFS();
+nodes.ForEach(Console.WriteLine);
+
+Index: 0. Data: 1. Neighbors: 2.
+Index: 1. Data: 2. Neighbors: 2.
+Index: 3. Data: 4. Neighbors: 2.
+Index: 7. Data: 8. Neighbors: 1.
+Index: 4. Data: 5. Neighbors: 4.
+Index: 5. Data: 6. Neighbors: 1.
+Index: 6. Data: 7. Neighbors: 2.
+Index: 2. Data: 3. Neighbors: 1.
+ 
+ 
+Breadth-first search
+BFS
+visit all the neighbors of the current node and then proceed to the next level of nodes.
+
+public List<Node<T>> BFS() => BFS(Nodes[0]);
+
+private List<Node<T>> BFS(Node<T> node)
+{
+    bool[] isVisited = new bool[Nodes.Count];
+    isVisited[node.Index] = true;
+    List<Node<T>> result = [];
+    Queue<Node<T>> queue = [];
+    queue.Enqueue(node);
+    while (queue.Count > 0)
+    {
+        Node<T> next = queue.Dequeue();
+        result.Add(next);
+        foreach (Node<T> neighbor in next.Neighbors)
+        {
+            if (!isVisited[neighbor.Index])
+            {
+                isVisited[neighbor.Index] = true;
+                queue.Enqueue(neighbor);
+            }
+        }
+    }
+    return result;
+}
+
+Graph<int> graph = new()
+ { IsDirected = true, IsWeighted = true };
+ 
+Node<int> n1 = graph.AddNode(1); (...)
+Node<int> n8 = graph.AddNode(8);
+
+graph.AddEdge(n1, n2, 9); (...)
+graph.AddEdge(n8, n5, 3);
+
+List<Node<int>> nodes = graph.BFS();
+nodes.ForEach(Console.WriteLine);
+
+Index: 0. Data: 1. Neighbors: 2.
+Index: 1. Data: 2. Neighbors: 2.
+Index: 2. Data: 3. Neighbors: 1.
+Index: 3. Data: 4. Neighbors: 2.
+Index: 7. Data: 8. Neighbors: 1.
+Index: 4. Data: 5. Neighbors: 4.
+Index: 5. Data: 6. Neighbors: 1.
+Index: 6. Data: 7. Neighbors: 2.
+
+Minimum spanning tree
+A spanning tree is a subset of edges that connects all nodes in a graph without cycles
+a spanning tree with the minimum cost from all spanning trees available in the graph
+
+Kruskal’s or Prim’s algorithms
+Kruskal’s algorithm
+The algorithm takes an edge with the minimum weight from the remaining ones and adds it to the MST, but
+only if adding it does not create a cycle
+The algorithm stops when all the nodes are connected.
+
+MSTKruskal method
+Graph class
+public List<Edge<T>> MSTKruskal()
+{
+    List<Edge<T>> edges = GetEdges();
+    edges.Sort((a, b) => a.Weight.CompareTo(b.Weight));
+    Queue<Edge<T>> queue = new(edges);
+    Subset<T>[] subsets = new Subset<T>[Nodes.Count];
+    for (int i = 0; i < Nodes.Count; i++)
+    {
+        subsets[i] = new() { Parent = Nodes[i] };
+    }
+    List<Edge<T>> result = [];
+    while (result.Count < Nodes.Count - 1)
+    {
+        Edge<T> edge = queue.Dequeue();
+        Node<T> from = GetRoot(subsets, edge.From);
+        Node<T> to = GetRoot(subsets, edge.To);
+        if (from == to) { continue; }
+        result.Add(edge);
+        Union(subsets, from, to);
+    }
+    return result;
+}
+
+GetRoot method
+private Node<T> GetRoot(Subset<T>[] subsets, Node<T> node)
+{
+    int i = node.Index;
+    ss[i].Parent = ss[i].Parent != node
+        ? GetRoot(ss, ss[i].Parent) : ss[i].Parent;
+    return ss[i].Parent;
+}
+
+Union method
+private void Union(Subset<T>[] ss, Node<T> a, Node<T> b)
+{
+    ss[b.Index].Parent =
+        ss[a.Index].Rank >= ss[b.Index].Rank
+            ? a : ss[b.Index].Parent;
+    ss[a.Index].Parent =
+		ss[a.Index].Rank < ss[b.Index].Rank
+            ? b : ss[a.Index].Parent;
+    if (ss[a.Index].Rank == ss[b.Index].Rank)
+    {
+        ss[a.Index].Rank++;
+    }
+}
+
+Subset class
+public class Subset<T>
+{
+    public required Node<T> Parent { get; set; }
+    public int Rank { get; set; }
+    public override string ToString() => $"Rank: {Rank}.
+        Parent: {Parent.Data}. Index: {Parent.Index}.";
+}
+
+usage of the MSTKruskal method
+
+Graph<int> graph = new()
+    { IsDirected = false, IsWeighted = true };
+	
+Node<int> n1 = graph.AddNode(1);
+Node<int> n2 = graph.AddNode(2);
+Node<int> n3 = graph.AddNode(3);
+Node<int> n4 = graph.AddNode(4);
+Node<int> n5 = graph.AddNode(5);
+Node<int> n6 = graph.AddNode(6);
+Node<int> n7 = graph.AddNode(7);
+Node<int> n8 = graph.AddNode(8);
+
+graph.AddEdge(n1, n2, 3);
+graph.AddEdge(n1, n3, 5);
+graph.AddEdge(n2, n4, 4);
+graph.AddEdge(n3, n4, 12);
+graph.AddEdge(n4, n5, 9);
+graph.AddEdge(n4, n8, 8);
+graph.AddEdge(n5, n6, 4);
+graph.AddEdge(n5, n7, 5);
+graph.AddEdge(n5, n8, 1);
+graph.AddEdge(n6, n7, 6);
+graph.AddEdge(n7, n8, 20);
+
+List<Edge<int>> edges = graph.MSTKruskal();
+edges.ForEach(Console.WriteLine);
+
+Result:
+8 -> 5. Weight: 1.
+1 -> 2. Weight: 3.
+2 -> 4. Weight: 4.
+5 -> 6. Weight: 4.
+1 -> 3. Weight: 5.
+7 -> 5. Weight: 5.
+8 -> 4. Weight: 8.
+
+
+Prim’s algorithm
+It uses two sets of nodes that are disjointed, namely the nodes located in
+the MST and the nodes that are not placed there yet
+finds an edge with the minimum weight that connects a node from the first group with a node from the second group.
+The node of the edge, which is not already in the MST, is added to this set.
+
+MSTPrim method
+Graph class
+public List<Edge<T>> MSTPrim()
+{
+    int[] previous = new int[Nodes.Count];
+    previous[0] = -1;
+    int[] minWeight = new int[Nodes.Count];
+    Array.Fill(minWeight, int.MaxValue);
+    minWeight[0] = 0;
+    bool[] isInMST = new bool[Nodes.Count];
+    Array.Fill(isInMST, false);
+    for (int i = 0; i < Nodes.Count - 1; i++)
+    {
+        int mwi = GetMinWeightIndex(minWeight, isInMST);
+        isInMST[mwi] = true;
+        for (int j = 0; j < Nodes.Count; j++)
+        {
+            Edge<T>? edge = this[mwi, j];
+            int weight = edge != null ? edge.Weight : -1;
+            if (edge != null
+                && !isInMST[j]
+                && weight < minWeight[j])
+            {
+                previous[j] = mwi;
+                minWeight[j] = weight;
+            }
+        }
+    }
+    List<Edge<T>> result = [];
+    for (int i = 1; i < Nodes.Count; i++)
+    {
+        result.Add(this[previous[i], i]!);
+    }
+    return result;
+}
+
+GetMinWeightIndex method
+private int GetMinWeightIndex(
+    int[] weights, bool[] isInMST)
+{
+    int minValue = int.MaxValue;
+    int minIndex = 0;
+    for (int i = 0; i < Nodes.Count; i++)
+    {
+        if (!isInMST[i] && weights[i] < minValue)
+        {
+            minValue = weights[i];
+            minIndex = i;
+        }
+    }
+    return minIndex;
+}
+ 
+usage of the MSTPrim method
+
+Graph<int> graph = new()
+    { IsDirected = false, IsWeighted = true };
+
+Node<int> n1 = graph.AddNode(1); (...)
+Node<int> n8 = graph.AddNode(8);
+ 
+graph.AddEdge(n1, n2, 3); (...)
+graph.AddEdge(n7, n8, 20);
+
+List<Edge<int>> edges = graph.MSTPrim();
+edges.ForEach(Console.WriteLine);
+
+Result:
+1 -> 2. Weight: 3.
+1 -> 3. Weight: 5.
+2 -> 4. Weight: 4.
+8 -> 5. Weight: 1.
+5 -> 6. Weight: 4.
+5 -> 7. Weight: 5.
+4 -> 8. Weight: 8.
+
+Example – telecommunication cable
+
+Graph<string> graph = new()
+ { IsDirected = false, IsWeighted = true };
+ 
+Node<string> nodeB1 = graph.AddNode("B1");
+Node<string> nodeB2 = graph.AddNode("B2");
+Node<string> nodeB3 = graph.AddNode("B3");
+Node<string> nodeB4 = graph.AddNode("B4");
+Node<string> nodeB5 = graph.AddNode("B5");
+Node<string> nodeB6 = graph.AddNode("B6");
+Node<string> nodeR1 = graph.AddNode("R1");
+Node<string> nodeR2 = graph.AddNode("R2");
+Node<string> nodeR3 = graph.AddNode("R3");
+Node<string> nodeR4 = graph.AddNode("R4");
+Node<string> nodeR5 = graph.AddNode("R5");
+Node<string> nodeR6 = graph.AddNode("R6");
+
+graph.AddEdge(nodeB1, nodeB2, 2);
+graph.AddEdge(nodeB1, nodeB3, 20);
+graph.AddEdge(nodeB1, nodeB4, 30);
+graph.AddEdge(nodeB2, nodeB3, 30);
+graph.AddEdge(nodeB2, nodeB4, 20);
+graph.AddEdge(nodeB2, nodeR2, 25);
+graph.AddEdge(nodeB3, nodeB4, 2);
+graph.AddEdge(nodeB4, nodeR4, 25);
+graph.AddEdge(nodeR1, nodeR2, 1);
+graph.AddEdge(nodeR2, nodeR3, 1);
+graph.AddEdge(nodeR3, nodeR4, 1);
+graph.AddEdge(nodeR1, nodeR5, 75);
+graph.AddEdge(nodeR3, nodeR6, 100);
+graph.AddEdge(nodeR5, nodeR6, 3);
+graph.AddEdge(nodeR6, nodeB5, 3);
+graph.AddEdge(nodeR6, nodeB6, 10);
+graph.AddEdge(nodeB5, nodeB6, 6);
+
+MSTKruskal method
+Console.WriteLine("Minimum Spanning Tree - Kruskal:");
+List<Edge<string>> kruskal = graph.MSTKruskal();
+kruskal.ForEach(Console.WriteLine);
+Console.WriteLine("Cost: " + kruskal.Sum(e => e.Weight));
+
+Result:
+Minimum Spanning Tree - Kruskal:
+R4 -> R3. Weight: 1.
+R3 -> R2. Weight: 1.
+R2 -> R1. Weight: 1.
+B1 -> B2. Weight: 2.
+B3 -> B4. Weight: 2.
+R6 -> R5. Weight: 3.
+R6 -> B5. Weight: 3.
+B6 -> B5. Weight: 6.
+B1 -> B3. Weight: 20.
+R2 -> B2. Weight: 25.
+R1 -> R5. Weight: 75.
+Cost: 139
+
+Prim’s algorithm
+Console.WriteLine("\nMinimum Spanning Tree - Prim:");
+List<Edge<string>> prim = graph.MSTPrim();
+prim.ForEach(Console.WriteLine);
+Console.WriteLine("Cost: " + prim.Sum(e => e.Weight));
+
+Minimum Spanning Tree - Prim:
+B1 -> B2. Weight: 2.
+B1 -> B3. Weight: 20.
+B3 -> B4. Weight: 2.
+R6 -> B5. Weight: 3.
+B5 -> B6. Weight: 6.
+R2 -> R1. Weight: 1.
+B2 -> R2. Weight: 25.
+R2 -> R3. Weight: 1.
+R3 -> R4. Weight: 1.
+R1 -> R5. Weight: 75.
+R5 -> R6. Weight: 3.
+Cost: 139
+
+
+
+Coloring
+node coloring 
+assign colors (numbers) to all nodes to comply with the rule that there cannot be an edge between two nodes
+with the same color
+
+FOUR-COLOR THEOREM
+
+Color method
+Graph class
+public int[] Color()
+{
+ int[] colors = new int[Nodes.Count];
+ Array.Fill(colors, -1);
+ colors[0] = 0;
+ bool[] available = new bool[Nodes.Count];
+ for (int i = 1; i < Nodes.Count; i++)
+    {
+        Array.Fill(available, true);
+        foreach (Node<T> neighbor in Nodes[i].Neighbors)
+        {
+            int ci = colors[neighbor.Index];
+            if (ci >= 0) { available[ci] = false; }
+        }
+        colors[i] = Array.IndexOf(available, true);
+    }
+    return colors;
+}
+
+Graph<int> graph = new()
+    { IsDirected = false, IsWeighted = false };
+
+Node<int> n1 = graph.AddNode(1);
+Node<int> n2 = graph.AddNode(2);
+Node<int> n3 = graph.AddNode(3);
+Node<int> n4 = graph.AddNode(4);
+Node<int> n5 = graph.AddNode(5);
+Node<int> n6 = graph.AddNode(6);
+Node<int> n7 = graph.AddNode(7);
+Node<int> n8 = graph.AddNode(8);
+
+graph.AddEdge(n1, n2);
+graph.AddEdge(n1, n3);
+graph.AddEdge(n2, n4);
+graph.AddEdge(n3, n4);
+graph.AddEdge(n4, n5);
+graph.AddEdge(n4, n8);
+graph.AddEdge(n5, n6);
+graph.AddEdge(n5, n7);
+graph.AddEdge(n5, n8);
+graph.AddEdge(n6, n7);
+graph.AddEdge(n7, n8);
+
+int[] colors = graph.Color();
+
+for (int i = 0; i < colors.Length; i++)
+{
+ Console.WriteLine(
+ $"Node {graph.Nodes[i].Data}: {colors[i]}");
+}
+
+Result:
+Node 1: 0
+Node 2: 1
+Node 3: 1
+Node 4: 0
+Node 5: 1
+Node 6: 0
+Node 7: 2
+Node 8: 3
+
+Example – voivodeship map
+
+Graph<string> graph = new()
+ { IsDirected = false, IsWeighted = false };
+ 
+List<string> borders =
+[
+ "PK:LU|SK|MA",
+ "LU:PK|SK|MZ|PD",
+ "SK:PK|MA|SL|LD|MZ|LU",
+ "MA:PK|SK|SL",
+ "SL:MA|SK|LD|OP",
+ "LD:SL|SK|MZ|KP|WP|OP",
+ "WP:LD|KP|PM|ZP|LB|DS|OP",
+ "OP:SL|LD|WP|DS",
+ "MZ:LU|SK|LD|KP|WM|PD",
+ "PD:LU|MZ|WM",
+ "WM:PD|MZ|KP|PM",
+    "KP:MZ|LD|WP|PM|WM",
+    "PM:WM|KP|WP|ZP",
+    "ZP:PM|WP|LB",
+    "LB:ZP|WP|DS",
+    "DS:LB|WP|OP"
+];
+
+Dictionary<string, Node<string>> nodes = [];
+
+foreach (string border in borders)
+{
+    string[] parts = border.Split(':');
+    string name = parts[0];
+    nodes[name] = graph.AddNode(name);
+}
+
+foreach (string border in borders)
+{
+    string[] parts = border.Split(':');
+    string name = parts[0];
+    string[] vicinities = parts[1].Split('|');
+    foreach (string vicinity in vicinities)
+    {
+        Node<string> from = nodes[name];
+        Node<string> to = nodes[vicinity];
+        if (!from.Neighbors.Contains(to))
+        {
+            graph.AddEdge(from, to);
+        }
+    }
+}
+
+int[] colors = graph.Color();
+for (int i = 0; i < colors.Length; i++)
+{
+    Console.WriteLine(
+        $"{graph.Nodes[i].Data}: {colors[i]}");
+}
+
+results
+PK: 0
+LU: 1
+SK: 2
+MA: 1
+SL: 0
+LD: 1
+WP: 0
+OP: 2
+MZ: 0
+PD: 2
+WM: 1
+KP: 2
+PM: 3
+ZP: 1
+LB: 2
+DS: 1
+
+Shortest path
+searching for the shortest path between two nodes, which takes into account a specific cost
+Dijkstra’s algorithm
+calculate the distance from a starting node to all nodes located in the graph
+During the consecutive iterations, the algorithm updates the minimum distances to particular nodes in the graph
+
+GetShortestPath method
+Graph class
+
+using Priority_Queue; (...)
+public List<Edge<T>> GetShortestPath(
+ Node<T> source, Node<T> target)
+{
+    int[] previous = new int[Nodes.Count];
+    Array.Fill(previous, -1);
+    int[] distances = new int[Nodes.Count];
+    Array.Fill(distances, int.MaxValue);
+    distances[source.Index] = 0;
+    SimplePriorityQueue<Node<T>> nodes = new();
+    for (int i = 0; i < Nodes.Count; i++)
+    {
+        nodes.Enqueue(Nodes[i], distances[i]);
+    }
+    while (nodes.Count != 0)
+    {
+        Node<T> node = nodes.Dequeue();
+        for (int i = 0; i < node.Neighbors.Count; i++)
+        {
+            Node<T> neighbor = node.Neighbors[i];
+            int weight = i < node.Weights.Count
+                ? node.Weights[i] : 0;
+            int wTotal = distances[node.Index] + weight;
+            if (distances[neighbor.Index] > wTotal)
+            {
+                distances[neighbor.Index] = wTotal;
+                previous[neighbor.Index] = node.Index;
+                nodes.UpdatePriority(neighbor,
+                    distances[neighbor.Index]);
+            }
+        }
+    }
+    List<int> indices = [];
+    int index = target.Index;
+    while (index >= 0)
+    {
+        indices.Add(index);
+        index = previous[index];
+    }
+    indices.Reverse();
+    List<Edge<T>> result = [];
+    for (int i = 0; i < indices.Count - 1; i++)
+    {
+        Edge<T> edge = this[indices[i], indices[i + 1]]!;
+        result.Add(edge);
+    }
+    return result;
+}
+
+usage of the GetShortestPath method
+Graph<int> graph = new()
+ { IsDirected = true, IsWeighted = true };
+ 
+Node<int> n1 = graph.AddNode(1); (...)
+Node<int> n8 = graph.AddNode(8);
+
+graph.AddEdge(n1, n2, 9); (...)
+graph.AddEdge(n8, n5, 3);
+
+List<Edge<int>> path = graph.GetShortestPath(n1, n5);
+path.ForEach(Console.WriteLine);
+
+result
+1 -> 3. Weight: 5.
+3 -> 4. Weight: 12.
+4 -> 8. Weight: 8.
+8 -> 5. Weight: 3.
+
+Example – path in game
+
+using System.Text;
+string[] lines = new string[]
+{
+ "0011100000111110000011111",
+ "0011100000111110000011111",
+ "0011100000111110000011111",
+ "0000000000011100000011111",
+ "0000001110000000000011111",
+ "0001001110011100000011111",
+ "1111111111111110111111100",
+ "1111111111111110111111101",
+ "1111111111111110111111100",
+ "0000000000000000111111110",
+ "0000000000000000111111100",
+ "0001111111001100000001101",
+ "0001111111001100000001100",
+ "0001100000000000111111110",
+ "1111100000000000111111100",
+ "1111100011001100100010001",
+ "1111100011001100001000100"
+};
+
+bool[][] map = new bool[lines.Length][];
+
+for (int i = 0; i < lines.Length; i++)
+{
+    map[i] = lines[i]
+        .Select(c => int.Parse(c.ToString()) == 0)
+        .ToArray();
+}
+
+Graph<string> graph = new()
+    { IsDirected = false, IsWeighted = true };
+	
+for (int i = 0; i < map.Length; i++)
+{
+    for (int j = 0; j < map[i].Length; j++)
+    {
+        if (!map[i][j]) { continue; }
+        Node<string> from = graph.AddNode($"{i}-{j}");
+        if (i > 0 && map[i - 1][j])
+        {
+            Node<string> to = graph.Nodes
+                .Find(n => n.Data == $"{i - 1}-{j}")!;
+            graph.AddEdge(from, to, 1);
+        }
+        if (j > 0 && map[i][j - 1])
+        {
+            Node<string> to = graph.Nodes
+                .Find(n => n.Data == $"{i}-{j - 1}")!;
+            graph.AddEdge(from, to, 1);
+        }
+    }
+}
+
+Node<string> s = graph.Nodes.Find(n => n.Data == "0-0")!;
+Node<string> t = graph.Nodes.Find(n => n.Data == "16-24")!;
+List<Edge<string>> path = graph.GetShortestPath(s, t);
+
+Console.OutputEncoding = Encoding.UTF8;
+for (int r = 0; r < map.Length; r++)
+{
+    for (int c = 0; c < map[r].Length; c++)
+    {
+        bool isPath = path.Any(e =>
+            e.From.Data == $"{r}-{c}"
+            || e.To.Data == $"{r}-{c}");
+        Console.ForegroundColor = isPath
+            ? ConsoleColor.White
+            : map[r][c]
+                ? ConsoleColor.Green
+                : ConsoleColor.Red;
+        Console.Write("\u25cf ");
+    }
+    Console.WriteLine();
+}
+Console.ResetColor();
+
