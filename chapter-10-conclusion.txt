@@ -1,0 +1,96 @@
+Conclusion
+choosing a proper data structure is not an easy task
+linear data structure
+nonlinear data structure
+
+Classification
+linear data structure
+each element can be logically adjacent to the following or the previous element
+non-linear data structure
+a single element can be logically adjacent to numerous others, not necessarily only one or two
+
+Arrays
+store many data of the same type
+random access data structures
+single-dimensional, multi-dimensional, and jagged arrays (array of arrays)
+names of months, the multiplication table, or even a map of a game
+selection sort, insertion sort, bubble sort, merge sort, Shell sort, quicksort, and heap sort
+
+Lists
+dynamically increase the size of the collection
+ArrayList, generic (List) and sorted (SortedList) variants
+singly linked list, a doubly linked list, a circular singly linked list, and a circular doubly linked list
+doubly linked list (LinkedList)
+database of people, address book, read the book, spins the wheel
+
+Stacks
+limited access data structures
+push
+pop
+LIFO Last-In First-Out
+Stack class
+pile of many plates
+reverse a word
+Tower of Hanoi
+reverse Polish notation
+
+Queues
+enqueue
+dequeue
+FIFO First-In First-Out
+priority queue
+circular queue	ring buffer
+line of people
+call center
+graph-based algorithms
+breadth-first search
+Dijkstra’s algorithm
+
+Dictionaries
+mapping keys to values and performing fast lookups
+non-generic (Hashtable) and generic (Dictionary)
+associative arrays, database indices, or cache systems
+phone book
+find the location
+encyclopedia
+
+Sets
+collection of distinct objects without duplicated elements and without any particular order
+union, intersection, subtraction, and symmetric difference
+HashSet class
+one-time promotional coupons
+reporting service
+
+Trees
+nodes
+root
+parent
+child nodes
+siblings
+leaf
+structure of a company
+simple quiz
+binary trees
+binary search tree (BST)
+self-balancing trees
+AVL trees and red-black trees (RBTs)
+auto-complete and spell-checker
+trie
+heap
+binary heap
+min-heap and max-heap
+priority queue
+heap sort
+
+Graphs
+nodes
+edges
+traversal
+minimum spanning tree
+node coloring
+finding the shortest path
+structure of friends
+finding a path
+plan of connections between buildings
+coloring voivodeships
+the shortest path in a game map
