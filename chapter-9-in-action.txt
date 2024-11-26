@@ -1,0 +1,566 @@
+See in Action
+Fibonacci series
+calculate a given number
+differ significantly in performance results
+
+minimum coin change
+greedy approach
+
+closest pair of points
+divide-and-conquer algorithm
+
+fractal
+
+rat in a maze and Sudoku
+back-tracking with recursion to solve puzzles
+
+guess a title
+genetic algorithm
+
+guessing a secret password
+brute-force algorithm
+
+
+The Fibonacci series
+long Fibonacci(int n)
+{
+ if (n == 0) { return 0; }
+ if (n == 1) { return 1; }
+return Fibonacci(n - 1) + Fibonacci(n - 2);
+}
+
+Fibonacci method calls itself
+
+long result = Fibonacci(25);
+75025 as a result
+very inefficient 
+very slow 
+
+dynamic programming improve its performance
+top-down approach
+memoization to cache the calculated results
+Dictionary<int, long> cache = [];
+long Fibonacci(int n)
+{
+ if (n == 0) { return 0; }
+ if (n == 1) { return 1; }
+ if (cache.ContainsKey(n)) { return cache[n]; }
+ long result = Fibonacci(n - 1) + Fibonacci(n - 2);
+ cache[n] = result;
+ return result;
+}
+
+This solution is almost 100,000 times faster
+
+bottom-up approach
+long Fibonacci(int n)
+{
+    if (n == 0) { return 0; }
+    if (n == 1) { return 1; }
+    long a = 0;
+    long b = 1;
+    for (int i = 2; i <= n; i++)
+    {
+        long result = a + b;
+        a = b;
+        b = result;
+    }
+    return b;
+}
+
+The top-down approach requires about 2 milliseconds, while the bottom-up still takes less than 1 millisecond
+
+Minimum coin change
+greedy algorithm
+pick the largest possible denomination not greater than the remaining amount
+
+int[] den = [1, 2, 5, 10, 20, 50, 100, 200, 500];
+List<int> coins = GetCoins(158);
+coins.ForEach(Console.WriteLine);
+List<int> GetCoins(int amount)
+{
+    List<int> coins = [];
+    for (int i = den.Length - 1; i >= 0; i--)
+    {
+        while (amount >= den[i])
+        {
+            amount -= den[i];
+            coins.Add(den[i]);
+        }
+	}
+ return coins;
+}
+
+
+passing 158, you will see 100, 50, 5, 2, and 1
+
+
+Closest pair of points
+divide-and-conquer
+recursion
+
+Result? FindClosestPair(Point[] points)
+{
+ if (points.Length <= 1) { return null; }
+ if (points.Length <= 3) { return Closest(points); }
+ int m = points.Length / 2;
+ Result r = Closer(
+ FindClosestPair(points.Take(m).ToArray())!,
+ FindClosestPair(points.Skip(m).ToArray())!);
+ Point[] strip = points.Where(p => Math.Abs(p.X- points[m].X) < r.Distance).ToArray();
+ return Closer(r, Closest(strip));
+}
+
+public record Point(int X, int Y)
+{
+    public float GetDistanceTo(Point p) =>
+        (float)Math.Sqrt(Math.Pow(X - p.X, 2)
+            + Math.Pow(Y - p.Y, 2));
+};
+
+public record Result(Point P1, Point P2, double Distance);
+
+Result Closest(Point[] points)
+{
+    Result result = new(points[0], points[0], double.MaxValue);
+    for (int i = 0; i < points.Length; i++)
+    {
+        for (int j = i + 1; j < points.Length; j++)
+        {
+            double distance = points[i].GetDistanceTo(points[j]);
+            if (distance < result.Distance)
+            {
+                result = new(points[i], points[j], distance);
+            }
+        }
+    }
+    return result;
+}
+
+Result Closer(Result r1, Result r2) =>
+    r1.Distance < r2.Distance ? r1 : r2;
+
+List<Point> points =
+[
+    new Point(6, 45),   // A
+    new Point(12, 8),   // B
+    new Point(14, 31),  // C
+    new Point(24, 18),  // D
+    new Point(32, 26),  // E
+    new Point(40, 41),  // F
+    new Point(44, 6),   // G
+    new Point(57, 20),  // H
+    new Point(60, 35),  // I
+    new Point(72, 9),   // J
+    new Point(73, 41),  // K
+    new Point(85, 25),  // L
+    new Point(92, 8),   // M
+    new Point(93, 43)   // N
+];
+
+points.Sort((a, b) => a.X.CompareTo(b.X));
+Result? closestPair = FindClosestPair(points.ToArray());
+if (closestPair != null)
+{
+    Console.WriteLine(
+        "Closest pair: ({0}, {1}) and ({2}, {3})
+         with distance: {4:F2}",
+        closestPair.P1.X,
+        closestPair.P1.Y,
+        closestPair.P2.X,
+        closestPair.P2.Y,
+        closestPair.Distance);
+}
+
+result
+Closest pair: (24, 18) and (32, 26) with distance: 11.31
+
+
+Fractal generation
+recursion
+
+AddLine method
+void AddLine(int level, float x, float y,
+    float length, float angle)
+{
+    if (level < 0) { return; }
+    float endX = x + (float)(length * Math.Cos(angle));
+    float endY = y + (float)(length * Math.Sin(angle));
+    lines.Add(new(x, y, endX, endY));
+    AddLine(level - 1, endX, endY, length * 0.8f,
+        angle + (float)Math.PI * 0.3f);
+    AddLine(level - 1, endX, endY, length * 0.6f,
+        angle + (float)Math.PI * 1.7f);
+}
+
+record Line(float X1, float Y1, float X2, float Y2)
+{
+    public float GetLength() =>
+        (float)Math.Sqrt(Math.Pow(X1 - X2, 2)
++ Math.Pow(Y1 - Y2, 2));
+}
+
+using System.Drawing;
+using System.Drawing.Drawing2D;
+const int maxSize = 1000;
+List<Line> lines = [];
+AddLine(14, 0, 0, 500, (float)Math.PI * 1.5f);
+
+THE REQUIRED NUGET PACKAGE
+System.Drawing
+System.Drawing.Drawing2D
+System.Drawing.Common
+
+float xMin = lines.Min(l => Math.Min(l.X1, l.X2));
+float xMax = lines.Max(l => Math.Max(l.X1, l.X2));
+float yMin = lines.Min(l => Math.Min(l.Y1, l.Y2));
+float yMax = lines.Max(l => Math.Max(l.Y1, l.Y2));
+float size = Math.Max(xMax - xMin, yMax - yMin);
+float factor = maxSize / size;
+int width = (int)((xMax - xMin) * factor);
+int height = (int)((yMax - yMin) * factor);
+
+using Bitmap bitmap = new(width, height);
+using Graphics graphics = Graphics.FromImage(bitmap);
+graphics.Clear(Color.White);
+graphics.SmoothingMode = SmoothingMode.AntiAlias;
+using Pen pen = new(Color.Black, 1);
+foreach (Line line in lines)
+{
+pen.Width = line.GetLength() / 20;
+float sx = (line.X1 - xMin) * factor;
+float sy = (line.Y1 - yMin) * factor;
+float ex = (line.X2 - xMin) * factor;
+float ey = (line.Y2 - yMin) * factor;
+graphics.DrawLine(pen, sx, sy, ex, ey);
+}
+bitmap.Save($"{DateTime.Now:HH-mm-ss}.png");
+
+
+
+Rat in a maze
+back-tracking algorithm
+recursion
+
+bool Go(int row, int col)
+{
+    if (row == size - 1
+        && col == size - 1
+        && maze[row, col])
+    {
+        solution[row, col] = true;
+        return true;
+    }
+    if (row >= 0 && row < size
+        && col >= 0 && col < size
+        && maze[row, col])
+    {
+        if (solution[row, col]) { return false; }
+        solution[row, col] = true;
+        if (Go(row + 1, col)) { return true; }
+        if (Go(row, col + 1)) { return true; }
+        if (Go(row - 1, col)) { return true; }
+if (Go(row, col - 1)) { return true; }
+ solution[row, col] = false;
+ return false;
+ }
+ return false;
+}
+
+
+
+int size = 8;
+bool t = true;
+bool f = false;
+bool[,] maze =
+{
+ { t, f, t, f, f, t, t, t },
+ { t, t, t, t, t, f, t, f },
+ { t, t, f, t, t, f, t, t },
+    { f, t, t, f, t, f, f, t },
+    { f, t, t, t, t, t, t, t },
+    { t, f, t, f, t, f, f, t },
+    { t, t, t, t, t, t, t, t },
+    { f, t, f, f, f, t, f, t }
+};
+bool[,] solution = new bool[size, size];
+if (Go(0, 0)) { Print(); }
+ 
+ 
+void Print()
+{
+    for (int row = 0; row < size; row++)
+    {
+        for (int col = 0; col < size; col++)
+        {
+            Console.Write(solution[row, col] ? "x" : "-");
+        }
+        Console.WriteLine();
+    }
+}
+ 
+
+A Sudoku puzzle
+fill empty cells of a 9x9 board with numbers from 1 to 9
+each row, each column, and each 3x3 box must contain only unique numbers
+back-tracking
+
+bool Solve()
+{
+    (int row, int col) = GetEmpty();
+    if (row < 0 && col < 0) { return true; }
+    for (int i = 1; i <= 9; i++)
+    {
+        if (IsCorrect(row, col, i))
+        {
+            board[row, col] = i;
+            if (Solve()) { return true; }
+            else { board[row, col] = 0; }
+        }
+    }
+    return false;
+}
+
+recursively call the Solve method
+
+(int, int) GetEmpty()
+{
+    for (int r = 0; r < 9; r++)
+    {
+        for (int c = 0; c < 9; c++)
+        {
+            if (board[r, c] == 0) { return (r, c); }
+        }
+    }
+    return (-1, -1);
+}
+
+bool IsCorrect(int row, int col, int num)
+{
+    for (int i = 0; i < 9; i++)
+    {
+        if (board[row, i] == num) { return false; }
+        if (board[i, col] == num) { return false; }
+    }
+    int rs = row - row % 3;
+    int cs = col - col % 3;
+    for (int r = rs; r < rs + 3; r++)
+    {
+        for (int c = cs; c < cs + 3; c++)
+        {
+            if (board[r, c] == num) { return false; }
+        }
+    }
+    return true;
+}
+
+int[,] board = new int[,]
+{
+    { 0, 5, 0, 4, 0, 1, 0, 0, 6 },
+    { 1, 0, 0, 9, 5, 0, 8, 0, 0 },
+    { 9, 0, 4, 0, 6, 0, 0, 0, 1 },
+    { 6, 2, 0, 0, 0, 5, 3, 0, 4 },
+    { 0, 9, 0, 0, 7, 0, 2, 0, 5 },
+    { 5, 0, 7, 0, 0, 0, 0, 8, 9 },
+    { 8, 0, 0, 5, 1, 9, 0, 0, 2 },
+    { 2, 3, 0, 0, 0, 6, 5, 0, 8 },
+    { 4, 1, 0, 2, 0, 8, 6, 0, 0 }
+};
+if (Solve()) { Print(); }
+
+
+void Print()
+{
+    for (int r = 0; r < 9; r++)
+    {
+        for (int c = 0; c < 9; c++)
+        {
+            Console.Write($"{board[r, c]} ");
+        }
+        Console.WriteLine();
+    }
+}
+
+
+Title guess
+heuristic
+genetic algorithms
+adaptive heuristic search algorithms
+population evolves to create next generations that are better suited to survive
+fitness
+rule of survival
+passing on the genes of the fittest parents
+randomized data exchange
+
+const string Genes = "abcdefghijklmnopqrstuvwxyz
+    #ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+const string Target = "C# Data Structures and Algorithms";
+Random random = new();
+int generationNo = 0;
+List<Individual> population = [];
+for (int i = 0; i < 1000; i++)
+{
+    string chromosome = GetRandomChromosome();
+    population.Add(new(chromosome,
+        GetFitness(chromosome)));
+}
+
+List<Individual> generation = [];
+while (true)
+{
+    population.Sort((a, b) =>
+        b.Fitness.CompareTo(a.Fitness));
+    if (population[0].Fitness == Target.Length)
+    {
+        Print();
+        break;
+    }
+    generation.Clear();
+    for (int i = 0; i < 200; i++)
+    {
+        generation.Add(population[i]);
+    }
+    for (int i = 0; i < 800; i++)
+    {
+        Individual p1 = population[random.Next(400)];
+        Individual p2 = population[random.Next(400)];
+        Individual offspring = Mate(p1, p2);
+        generation.Add(offspring);
+    }
+    population.Clear();
+    population.AddRange(generation);
+    Print();
+    generationNo++;
+}
+
+20% of the best-fitted individuals are moved automatically to the next generation
+crossover and randomly choose parents, from 40% of the best-fitted individuals, to generate new individuals
+
+record Individual(string Chromosome, int Fitness);
+
+generate a new individual using two parents:
+Individual Mate(Individual p1, Individual p2)
+{
+    string child = string.Empty;
+    for (int i = 0; i < Target.Length; i++)
+    {
+        float r = random.Next(101) / 100.0f;
+        if (r < 0.45f) { child += p1.Chromosome[i]; }
+        else if (r < 0.9f) { child += p2.Chromosome[i]; }
+        else { child += GetRandomGene(); }
+    }
+    return new Individual(child, GetFitness(child));
+}
+
+Approximately 45% of genes are taken from the first parent
+Approximately 45% of genes are taken from the second parent
+The remaining 10% are randomized
+
+
+char GetRandomGene() => Genes[random.Next(Genes.Length)];
+string GetRandomChromosome()
+{
+    string chromosome = string.Empty;
+    for (int i = 0; i < Target.Length; i++)
+    {
+        chromosome += GetRandomGene();
+    }
+    return chromosome;
+}
+
+returns the number of characters that matches the target book title
+int GetFitness(string chromosome)
+{
+    int fitness = 0;
+    for (int i = 0; i < Target.Length; i++)
+    {
+        if (chromosome[i] == Target[i]) { fitness++; }
+    }
+    return fitness;
+}
+
+void Print() => Console.WriteLine(
+    $"Generation {generationNo:D2}:
+    {population[0].Chromosome} / {population[0].Fitness}");
+	
+Result: 
+Generation 00: UvWvvtycVTYAsJYxXZpanLkj#rDrmDIEI / 4
+Generation 01: sXDGuQQDPnbjpRvWZs evqRNlg#yiwIPL / 5
+Generation 02: j#TvvtmKToXuTjxBegpaCLkmNsornzg R / 7
+Generation 03: fZCUBIT QrnuzwuWTskTOf bezodQwhmM / 8
+Generation 04: CyDwafZZpinLziuPgs yID AevGrGf bs / 9
+Generation 05: C# ZaBawSWwLoturSXOcIq wLeSgQOhme / 12 (...)
+Generation 10:  Sboats ttrDcterus Mnt jmvGrifhms / 17 (...)
+Generation 15: C kData ltrCkteres entbAagorZthmD / 21 (...)
+Generation 20: C#VDatahStrdcturessanU Al#orithmd / 26 (...)
+Generation 25: CZ Data StrunturOs awd Algorithms / 29 (...)
+Generation 30: C# Data Structures Qjd Algorithms / 31 (...)
+Generation 35: C# Data Structures and Algorothms / 32 (...)
+Generation 37: C# Data Structures and Algorithms / 33
+
+
+A password guess
+brute-force algorithm
+generate all possible passwords and trying to guess your secret one
+
+using System.Diagnostics;
+using System.Text;
+const string secretPassword = "csharp";
+int charsCount = 0;
+char[] chars = new char[36];
+for (char c = 'a'; c <= 'z'; c++)
+{
+ chars[charsCount++] = c;
+}
+for (char c = '0'; c <= '9'; c++)
+{
+ chars[charsCount++] = c;
+}
+
+for (int length = 2; length <= 8; length++)
+{
+ Stopwatch sw = Stopwatch.StartNew();
+    int[] indices = new int[length];
+    for (int i = 0; i < length; i++) { indices[i] = 0; }
+    bool isCompleted = false;
+    StringBuilder builder = new();
+    long count = 0;
+    while (!isCompleted)
+    {
+        builder.Clear();
+        for (int i = 0; i < length; i++)
+        {
+            builder.Append(chars[indices[i]]);
+        }
+        string guess = builder.ToString();
+        if (guess == secretPassword)
+        {
+            Console.WriteLine("Found.");
+        }
+        count++;
+        if (count % 10000000 == 0)
+        {
+            Console.WriteLine($" > Checked: {count}.");
+        }
+        indices[length - 1]++;
+        if (indices[length - 1] >= charsCount)
+        {
+            for (int i = length - 1; i >= 0; i--)
+            {
+                indices[i] = 0;
+                indices[i - 1]++;
+                if (indices[i - 1] < charsCount) { break; }
+                if (i - 1 == 0 && indices[0] >= charsCount)
+                {
+                    isCompleted = true;
+                    break;
+                }
+            }
+        }
+    }
+    sw.Stop();
+    int seconds = (int)sw.ElapsedMilliseconds / 1000;
+    Console.ForegroundColor = ConsoleColor.White;
+    Console.WriteLine($"{length} chars: {seconds}s");
+    Console.ResetColor();
+}
